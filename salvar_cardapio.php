@@ -10,7 +10,7 @@ if (!isset($_SESSION['usuario_id'])) {
 $cardapio_id    = $_POST['cardapio_id'] ?? null;
 $nome_negocio   = trim($_POST['nome_negocio'] ?? '');
 $descricao      = trim($_POST['descricao'] ?? '');
-$cor_principal  = $_POST['cor_principal'] ?? '#FF5A1F';
+$cor_principal  = $_POST['cor_principal'] ?? #7c3aed';
 
 $item_nome       = trim($_POST['item_nome'] ?? '');
 $item_categoria  = trim($_POST['item_categoria'] ?? '');

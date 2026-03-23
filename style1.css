@@ -1,22 +1,33 @@
 :root {
-  --primary: #FF5A1F;
-  --primary-dark: #E64912;
-  --secondary: #FFB703;
-  --dark: #0B132B;
-  --dark-soft: #1C2541;
-  --accent: #06D6A0;
-  --bg: #FFF9F5;
-  --bg-soft: #FFF3EB;
-  --white: #FFFFFF;
-  --text: #0B132B;
-  --text-soft: #5C6478;
-  --border: #F3D8C7;
-  --line: #F1E3D8;
-  --shadow: 0 10px 30px rgba(11, 19, 43, 0.08);
-  --shadow-strong: 0 14px 34px rgba(255, 90, 31, 0.16);
+  --primary: #7c3aed;
+  --primary-light: #a855f7;
+  --primary-dark: #4c1d95;
+
+  --secondary: #84cc16;
+  --secondary-light: #a3e635;
+  --secondary-dark: #3f6212;
+
+  --accent: #22c55e;
+  --dark: #1f1147;
+  --dark-soft: #3b2a6f;
+
+  --bg: #f8f7ff;
+  --bg-soft: #f2fdf5;
+  --white: #ffffff;
+
+  --text: #1f1147;
+  --text-soft: #6b7280;
+
+  --border: #e9ddff;
+  --line: #ece8f7;
+
+  --shadow: 0 10px 30px rgba(31, 17, 71, 0.08);
+  --shadow-strong: 0 14px 34px rgba(124, 58, 237, 0.18);
+
   --radius-xl: 24px;
   --radius-lg: 18px;
   --radius-md: 14px;
+
   --transition: 0.22s ease;
 }
 
@@ -29,9 +40,9 @@
 
 body.mobile-body {
   background:
-    radial-gradient(circle at top left, rgba(255, 183, 3, 0.14), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(255, 90, 31, 0.12), transparent 30%),
-    linear-gradient(180deg, #fffaf7, #fff3eb);
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.16), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(163, 230, 53, 0.14), transparent 30%),
+    linear-gradient(180deg, #fcfbff, #f4f8ff);
   min-height: 100vh;
   color: var(--text);
 }
@@ -43,15 +54,15 @@ body.mobile-body {
   padding: 20px 16px 40px;
 }
 
-/* CARDS GERAIS */
+/* CARDS */
 
 .hero-card,
 .form-card,
 .preview-card,
 .list-card,
 .categoria-card {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(243, 216, 199, 0.9);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 18px;
   margin-bottom: 18px;
@@ -77,7 +88,8 @@ body.mobile-body {
 .preview-card p,
 .menu-item p,
 .empty,
-.produto-info p {
+.produto-info p,
+.form-subtitle {
   color: var(--text-soft);
   line-height: 1.5;
 }
@@ -85,14 +97,18 @@ body.mobile-body {
 /* LOGO */
 
 .logo-badge {
-    background: url("logo.png");
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-  width: 90%;
+  width: 72px;
   height: 72px;
-  margin: 0 auto 14px;
+  margin: 0 auto 16px;
   border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+  color: var(--white);
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-strong);
 }
 
 /* TOPO */
@@ -124,7 +140,7 @@ body.mobile-body {
   border: 1px solid var(--border);
   border-radius: 16px;
   outline: none;
-  background: #fffdfa;
+  background: #fcfbff;
   color: var(--text);
   font-size: 15px;
   transition: var(--transition);
@@ -132,7 +148,7 @@ body.mobile-body {
 
 .form-card input::placeholder,
 .form-card textarea::placeholder {
-  color: #9c8f86;
+  color: #9a95b1;
 }
 
 .form-card input:focus,
@@ -140,7 +156,7 @@ body.mobile-body {
 .form-card select:focus {
   border-color: var(--primary);
   background: var(--white);
-  box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
 }
 
 .form-card textarea {
@@ -161,7 +177,6 @@ body.mobile-body {
 .link-btn,
 .btn-ghost {
   display: block;
-  width: 100%;
   text-align: center;
   text-decoration: none;
   padding: 14px 16px;
@@ -181,29 +196,28 @@ body.mobile-body {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  filter: brightness(1.03);
-}
-
-.btn-ghost {
-  width: auto;
-  background: var(--white);
-  color: var(--dark);
-  border: 1px solid var(--border);
-  padding: 10px 14px;
-}
-
-.btn-ghost:hover {
-  background: var(--bg-soft);
+  filter: brightness(1.04);
 }
 
 .link-btn {
-  background: #fff7ed;
+  background: #f5f3ff;
   color: var(--primary-dark);
-  border: 1px solid #fed7aa;
+  border: 1px solid #ddd6fe;
 }
 
 .link-btn:hover {
-  background: #ffedd5;
+  background: #ede9fe;
+}
+
+.btn-ghost {
+  background: var(--white);
+  color: var(--dark);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: #faf7ff;
 }
 
 /* PREVIEW */
@@ -222,12 +236,16 @@ body.mobile-body {
   right: -18px;
   top: -18px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 183, 3, 0.25), transparent 70%);
+  background: radial-gradient(circle, rgba(132, 204, 22, 0.20), transparent 70%);
 }
 
 .preview-card h3 {
   color: var(--dark);
   margin-bottom: 6px;
+}
+
+.preview-card p {
+  margin-top: 4px;
 }
 
 .color-chip {
@@ -236,11 +254,11 @@ body.mobile-body {
   border-radius: 50%;
   display: inline-block;
   margin-top: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 4px 10px rgba(11, 19, 43, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 10px rgba(31, 17, 71, 0.12);
 }
 
-/* LISTA DE ITENS */
+/* LISTAS */
 
 .menu-item {
   display: flex;
@@ -262,21 +280,21 @@ body.mobile-body {
 }
 
 .menu-item small {
-  color: #8b93a7;
+  color: #8b84a6;
 }
 
-/* ALERTAS */
+/* ALERTA */
 
 .alert {
-  background: #fff1f0;
-  color: #9f1239;
-  border: 1px solid #fecaca;
+  background: #f5f3ff;
+  color: var(--primary-dark);
+  border: 1px solid #ddd6fe;
   padding: 12px;
   border-radius: 14px;
   margin-bottom: 10px;
 }
 
-/* TEXTOS AUXILIARES */
+/* AUXILIARES */
 
 .label-inline {
   display: block;
@@ -284,6 +302,11 @@ body.mobile-body {
   color: var(--dark-soft);
   font-size: 14px;
   font-weight: 600;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .empty {
@@ -298,7 +321,7 @@ hr {
   margin: 18px 0;
 }
 
-/* VISUALIZAÇÃO DO CARDÁPIO */
+/* BANNER DO CARDÁPIO */
 
 .cliente-cardapio-banner {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -307,7 +330,7 @@ hr {
   margin-bottom: 18px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 14px 34px rgba(255, 90, 31, 0.18);
+  box-shadow: 0 14px 34px rgba(124, 58, 237, 0.20);
 }
 
 .cliente-cardapio-banner::before {
@@ -318,7 +341,7 @@ hr {
   border-radius: 50%;
   right: -40px;
   top: -40px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .cliente-cardapio-banner::after {
@@ -329,7 +352,7 @@ hr {
   border-radius: 50%;
   left: -30px;
   bottom: -30px;
-  background: rgba(11, 19, 43, 0.10);
+  background: rgba(31, 17, 71, 0.10);
 }
 
 .cliente-cardapio-overlay {
@@ -349,7 +372,7 @@ hr {
 }
 
 .cliente-cardapio-banner p {
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.94);
   line-height: 1.5;
   font-size: 15px;
 }
@@ -358,7 +381,7 @@ hr {
   display: inline-block;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(11, 19, 43, 0.16);
+  background: rgba(31, 17, 71, 0.18);
   color: var(--white);
   font-size: 12px;
   font-weight: bold;
@@ -368,14 +391,14 @@ hr {
 /* CATEGORIAS */
 
 .categoria-card {
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.97);
 }
 
 .categoria-titulo {
   font-size: 18px;
   margin-bottom: 14px;
   color: var(--dark);
-  border-left: 4px solid var(--primary);
+  border-left: 4px solid var(--secondary);
   padding-left: 10px;
 }
 
@@ -406,46 +429,14 @@ hr {
   font-size: 15px;
   font-weight: bold;
   color: var(--dark);
-  background: #fff7ed;
+  background: #f2fdf5;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid #fed7aa;
-  box-shadow: 0 4px 10px rgba(255, 90, 31, 0.06);
+  border: 1px solid #dcfce7;
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.08);
 }
 
-
-
-
-
-
-
-.form-subtitle {
-  color: var(--text-soft);
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 6px;
-}
-
-.hero-card .logo-badge {
-  margin-bottom: 16px;
-}
-
-.hero-card h1 {
-  font-size: 30px;
-  line-height: 1.1;
-}
-
-.preview-card p {
-  margin-top: 4px;
-}
-
-.list-card h3,
-.form-card h3,
-.form-card h2 {
-  line-height: 1.2;
-}
-
-/* PEQUENOS AJUSTES RESPONSIVOS */
+/* RESPONSIVO */
 
 @media (max-width: 380px) {
   .mobile-app {
@@ -461,6 +452,7 @@ hr {
     border-radius: 20px;
   }
 
+  .hero-card h1,
   .cliente-cardapio-banner h1 {
     font-size: 24px;
   }
