@@ -101,7 +101,7 @@ $totalItens = count($itens);
       </div>
     </section>
 
-    <form class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST">
+    <form class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST" enctype="multipart/form-data">
       <div class="section-header">
         <div>
           <small class="section-mini-title">Personalização</small>
@@ -112,6 +112,7 @@ $totalItens = count($itens);
 
       <p class="form-subtitle">Atualize os dados do seu negócio e adicione novos itens ao cardápio.</p>
 
+      <input type="hidden" name="acao" value="salvar_cardapio">
       <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
 
       <label class="label-inline">Nome do negócio</label>
@@ -138,6 +139,22 @@ $totalItens = count($itens);
         </div>
       </div>
 
+      <label class="label-inline">Imagem de fundo do cardápio</label>
+      <?php if (!empty($cardapio['imagem_fundo'])): ?>
+        <div class="upload-preview banner-preview">
+          <img src="<?= htmlspecialchars($cardapio['imagem_fundo']) ?>" alt="Imagem de fundo do cardápio">
+        </div>
+        <div class="media-actions">
+          <span class="media-help">Você pode trocar ou remover a imagem atual.</span>
+          <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a imagem de fundo atual?');">
+            <input type="hidden" name="acao" value="remover_fundo">
+            <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
+            <button type="submit" class="btn-secondary btn-danger-lite">Remover imagem de fundo</button>
+          </form>
+        </div>
+      <?php endif; ?>
+      <input type="file" name="imagem_fundo" accept="image/*">
+
       <hr>
 
       <div class="section-header inner">
@@ -159,6 +176,9 @@ $totalItens = count($itens);
       <label class="label-inline">Preço</label>
       <input type="number" step="0.01" name="item_preco" placeholder="Ex: 29.90">
 
+      <label class="label-inline">Foto do item</label>
+      <input type="file" name="item_imagem" accept="image/*">
+
       <button type="submit" class="btn-primary">Salvar alterações</button>
     </form>
 
@@ -173,17 +193,43 @@ $totalItens = count($itens);
 
       <?php if (count($itens) > 0): ?>
         <?php foreach ($itens as $item): ?>
-          <div class="menu-item">
-            <div class="menu-item-left">
-              <div class="item-category-dot"></div>
-              <div>
-                <strong><?= htmlspecialchars($item['nome']) ?></strong>
-                <p><?= htmlspecialchars($item['descricao']) ?></p>
-                <small><?= htmlspecialchars($item['categoria'] ?: 'Geral') ?></small>
+          <div class="menu-item item-card-extended">
+            <div class="menu-item-top">
+              <div class="menu-item-left">
+                <?php if (!empty($item['imagem'])): ?>
+                  <img class="item-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+                <?php else: ?>
+                  <div class="item-category-dot"></div>
+                <?php endif; ?>
+                <div>
+                  <strong><?= htmlspecialchars($item['nome']) ?></strong>
+                  <p><?= htmlspecialchars($item['descricao']) ?></p>
+                  <small><?= htmlspecialchars($item['categoria'] ?: 'Geral') ?></small>
+                </div>
               </div>
+
+              <span class="produto-preco">R$ <?= number_format($item['preco'], 2, ',', '.') ?></span>
             </div>
 
-            <span class="produto-preco">R$ <?= number_format($item['preco'], 2, ',', '.') ?></span>
+            <div class="item-photo-tools">
+              <form action="salvar_cardapio.php" method="POST" enctype="multipart/form-data" class="item-photo-form">
+                <input type="hidden" name="acao" value="atualizar_foto_item">
+                <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+                <label class="label-inline small"><?= !empty($item['imagem']) ? 'Trocar foto do item' : 'Adicionar foto ao item' ?></label>
+                <div class="item-photo-row">
+                  <input type="file" name="nova_item_imagem" accept="image/*" required>
+                  <button type="submit" class="btn-secondary">Salvar foto</button>
+                </div>
+              </form>
+
+              <?php if (!empty($item['imagem'])): ?>
+                <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a foto deste item?');">
+                  <input type="hidden" name="acao" value="remover_foto_item">
+                  <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+                  <button type="submit" class="btn-secondary btn-danger-lite">Remover foto</button>
+                </form>
+              <?php endif; ?>
+            </div>
           </div>
         <?php endforeach; ?>
       <?php else: ?>
