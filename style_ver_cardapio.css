@@ -426,3 +426,5 @@ body.mobile-body {
     border-radius: 16px;
   }
 }
+.produto-card.has-image{align-items:center;gap:14px}
+.produto-imagem{width:88px;height:88px;min-width:88px;border-radius:18px;object-fit:cover;box-shadow:0 10px 22px rgba(40,18,94,.12)}

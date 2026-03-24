@@ -101,7 +101,7 @@ $totalItens = count($itens);
       </div>
     </section>
 
-    <form class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST">
+    <form class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST" enctype="multipart/form-data">
       <div class="section-header">
         <div>
           <small class="section-mini-title">Personalização</small>
@@ -138,6 +138,14 @@ $totalItens = count($itens);
         </div>
       </div>
 
+      <label class="label-inline">Imagem de fundo do cardápio</label>
+      <?php if (!empty($cardapio['imagem_fundo'])): ?>
+        <div class="upload-preview banner-preview">
+          <img src="<?= htmlspecialchars($cardapio['imagem_fundo']) ?>" alt="Imagem de fundo do cardápio">
+        </div>
+      <?php endif; ?>
+      <input type="file" name="imagem_fundo" accept="image/*">
+
       <hr>
 
       <div class="section-header inner">
@@ -159,6 +167,9 @@ $totalItens = count($itens);
       <label class="label-inline">Preço</label>
       <input type="number" step="0.01" name="item_preco" placeholder="Ex: 29.90">
 
+      <label class="label-inline">Foto do item</label>
+      <input type="file" name="item_imagem" accept="image/*">
+
       <button type="submit" class="btn-primary">Salvar alterações</button>
     </form>
 
@@ -175,7 +186,11 @@ $totalItens = count($itens);
         <?php foreach ($itens as $item): ?>
           <div class="menu-item">
             <div class="menu-item-left">
-              <div class="item-category-dot"></div>
+              <?php if (!empty($item['imagem'])): ?>
+                <img class="item-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+              <?php else: ?>
+                <div class="item-category-dot"></div>
+              <?php endif; ?>
               <div>
                 <strong><?= htmlspecialchars($item['nome']) ?></strong>
                 <p><?= htmlspecialchars($item['descricao']) ?></p>

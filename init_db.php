@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS cardapios (
     nome_negocio TEXT NOT NULL,
     cor_principal TEXT DEFAULT '#ff7a00',
     descricao TEXT,
+    imagem_fundo TEXT,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 ");
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS itens (
     descricao TEXT,
     preco REAL NOT NULL,
     categoria TEXT,
+    imagem TEXT,
     FOREIGN KEY (cardapio_id) REFERENCES cardapios(id)
 );
 ");
