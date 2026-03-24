@@ -54,7 +54,11 @@ $totalItens = count($itens);
       <a href="painel.php" class="btn-ghost">Voltar</a>
     </div>
 
+<<<<<<< HEAD
     <div class="cliente-cardapio-banner fade-up delay-2" style="--cor-principal: <?= htmlspecialchars($cardapio['cor_principal']) ?>; <?= !empty($cardapio['imagem_fundo']) ? "background-image: linear-gradient(rgba(0,0,0,0.40), rgba(0,0,0,0.52)), url('" . htmlspecialchars($cardapio['imagem_fundo']) . "'); background-size: cover; background-position: center;" : "" ?>">
+=======
+    <div class="cliente-cardapio-banner fade-up delay-2" style="--cor-principal: <?= htmlspecialchars($cardapio['cor_principal']) ?>; <?= !empty($cardapio['imagem_fundo']) ? "background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.45)), url('" . htmlspecialchars($cardapio['imagem_fundo']) . "'); background-size: cover; background-position: center;" : "" ?>">
+>>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
       <div class="cliente-cardapio-overlay">
         <span class="cliente-badge">Cardápio Online</span>
         <h1><?= htmlspecialchars($cardapio['nome_negocio']) ?></h1>
@@ -76,6 +80,7 @@ $totalItens = count($itens);
             <span class="categoria-count"><?= count($lista) ?> item(ns)</span>
           </div>
 
+<<<<<<< HEAD
           <div class="produtos-grid">
             <?php foreach ($lista as $item): ?>
               <div 
@@ -90,6 +95,17 @@ $totalItens = count($itens);
                   <?php else: ?>
                     <div class="produto-imagem produto-sem-imagem">🍽</div>
                   <?php endif; ?>
+=======
+          <?php foreach ($lista as $item): ?>
+            <div class="produto-card<?= !empty($item['imagem']) ? ' has-image' : '' ?>">
+              <?php if (!empty($item['imagem'])): ?>
+                <img class="produto-imagem" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+              <?php endif; ?>
+
+              <div class="produto-info">
+                <div class="produto-top">
+                  <h4><?= htmlspecialchars($item['nome']) ?></h4>
+>>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
                 </div>
 
                 <div class="produto-conteudo">

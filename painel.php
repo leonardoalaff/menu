@@ -144,6 +144,7 @@ $totalItens = count($itens);
         <div class="upload-preview banner-preview">
           <img src="<?= htmlspecialchars($cardapio['imagem_fundo']) ?>" alt="Imagem de fundo do cardápio">
         </div>
+<<<<<<< HEAD
         <div class="media-actions">
           <span class="media-help">Você pode trocar ou remover a imagem atual.</span>
           <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a imagem de fundo atual?');">
@@ -152,6 +153,8 @@ $totalItens = count($itens);
             <button type="submit" class="btn-secondary btn-danger-lite">Remover imagem de fundo</button>
           </form>
         </div>
+=======
+>>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
       <?php endif; ?>
       <input type="file" name="imagem_fundo" accept="image/*">
 
@@ -193,6 +196,7 @@ $totalItens = count($itens);
 
       <?php if (count($itens) > 0): ?>
         <?php foreach ($itens as $item): ?>
+<<<<<<< HEAD
           <div class="menu-item item-card-extended">
             <div class="menu-item-top">
               <div class="menu-item-left">
@@ -206,6 +210,19 @@ $totalItens = count($itens);
                   <p><?= htmlspecialchars($item['descricao']) ?></p>
                   <small><?= htmlspecialchars($item['categoria'] ?: 'Geral') ?></small>
                 </div>
+=======
+          <div class="menu-item">
+            <div class="menu-item-left">
+              <?php if (!empty($item['imagem'])): ?>
+                <img class="item-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+              <?php else: ?>
+                <div class="item-category-dot"></div>
+              <?php endif; ?>
+              <div>
+                <strong><?= htmlspecialchars($item['nome']) ?></strong>
+                <p><?= htmlspecialchars($item['descricao']) ?></p>
+                <small><?= htmlspecialchars($item['categoria'] ?: 'Geral') ?></small>
+>>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
               </div>
 
               <span class="produto-preco">R$ <?= number_format($item['preco'], 2, ',', '.') ?></span>

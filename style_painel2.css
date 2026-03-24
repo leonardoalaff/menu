@@ -675,6 +675,7 @@ hr {
 .banner-preview img{height:150px}
 input[type="file"]{width:100%;padding:12px 14px;border:1px dashed var(--primary-light);border-radius:16px;background:#fff;margin-bottom:10px;color:var(--text-soft)}
 .item-thumb{width:54px;height:54px;min-width:54px;border-radius:14px;object-fit:cover;box-shadow:0 8px 18px rgba(59,142,219,.14);border:2px solid rgba(255,255,255,.9)}
+<<<<<<< HEAD
 
 .upload-preview {
   margin-bottom: 12px;
@@ -791,3 +792,5 @@ input[type="file"]{width:100%;padding:12px 14px;border:1px dashed var(--primary-
     align-items: stretch;
   }
 }
+=======
+>>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
