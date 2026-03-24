@@ -24,7 +24,7 @@ $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $itensPorCategoria = [];
 
 foreach ($itens as $item) {
-    $categoria = trim($item['categoria']) !== '' ? $item['categoria'] : 'Geral';
+    $categoria = isset($item['categoria']) && trim($item['categoria']) !== '' ? $item['categoria'] : 'Geral';
     $itensPorCategoria[$categoria][] = $item;
 }
 
@@ -54,15 +54,20 @@ $totalItens = count($itens);
       <a href="painel.php" class="btn-ghost">Voltar</a>
     </div>
 
-<<<<<<< HEAD
-    <div class="cliente-cardapio-banner fade-up delay-2" style="--cor-principal: <?= htmlspecialchars($cardapio['cor_principal']) ?>; <?= !empty($cardapio['imagem_fundo']) ? "background-image: linear-gradient(rgba(0,0,0,0.40), rgba(0,0,0,0.52)), url('" . htmlspecialchars($cardapio['imagem_fundo']) . "'); background-size: cover; background-position: center;" : "" ?>">
-=======
-    <div class="cliente-cardapio-banner fade-up delay-2" style="--cor-principal: <?= htmlspecialchars($cardapio['cor_principal']) ?>; <?= !empty($cardapio['imagem_fundo']) ? "background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.45)), url('" . htmlspecialchars($cardapio['imagem_fundo']) . "'); background-size: cover; background-position: center;" : "" ?>">
->>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
+    <div
+      class="cliente-cardapio-banner fade-up delay-2"
+      style="
+        --cor-principal: <?= htmlspecialchars($cardapio['cor_principal'] ?? '#333') ?>;
+        <?= !empty($cardapio['imagem_fundo'])
+          ? "background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.45)), url('" . htmlspecialchars($cardapio['imagem_fundo']) . "'); background-size: cover; background-position: center;"
+          : ""
+        ?>
+      "
+    >
       <div class="cliente-cardapio-overlay">
         <span class="cliente-badge">Cardápio Online</span>
-        <h1><?= htmlspecialchars($cardapio['nome_negocio']) ?></h1>
-        <p><?= nl2br(htmlspecialchars($cardapio['descricao'])) ?></p>
+        <h1><?= htmlspecialchars($cardapio['nome_negocio'] ?? '') ?></h1>
+        <p><?= nl2br(htmlspecialchars($cardapio['descricao'] ?? '')) ?></p>
 
         <div class="hero-mini-list">
           <span><?= $totalItens ?> item(ns)</span>
@@ -80,39 +85,31 @@ $totalItens = count($itens);
             <span class="categoria-count"><?= count($lista) ?> item(ns)</span>
           </div>
 
-<<<<<<< HEAD
           <div class="produtos-grid">
             <?php foreach ($lista as $item): ?>
-              <div 
+              <div
                 class="produto-card"
-                data-id="<?= (int)$item['id'] ?>"
-                data-nome="<?= htmlspecialchars($item['nome']) ?>"
-                data-preco="<?= number_format((float)$item['preco'], 2, '.', '') ?>"
+                data-id="<?= (int)($item['id'] ?? 0) ?>"
+                data-nome="<?= htmlspecialchars($item['nome'] ?? '') ?>"
+                data-preco="<?= number_format((float)($item['preco'] ?? 0), 2, '.', '') ?>"
               >
                 <div class="produto-imagem-wrap">
                   <?php if (!empty($item['imagem'])): ?>
-                    <img class="produto-imagem" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+                    <img
+                      class="produto-imagem"
+                      src="<?= htmlspecialchars($item['imagem']) ?>"
+                      alt="<?= htmlspecialchars($item['nome'] ?? '') ?>"
+                    >
                   <?php else: ?>
                     <div class="produto-imagem produto-sem-imagem">🍽</div>
                   <?php endif; ?>
-=======
-          <?php foreach ($lista as $item): ?>
-            <div class="produto-card<?= !empty($item['imagem']) ? ' has-image' : '' ?>">
-              <?php if (!empty($item['imagem'])): ?>
-                <img class="produto-imagem" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
-              <?php endif; ?>
-
-              <div class="produto-info">
-                <div class="produto-top">
-                  <h4><?= htmlspecialchars($item['nome']) ?></h4>
->>>>>>> daa9e097779d654ce33053cfa7b9bff4c0b375c8
                 </div>
 
                 <div class="produto-conteudo">
                   <div class="produto-top">
-                    <h4><?= htmlspecialchars($item['nome']) ?></h4>
+                    <h4><?= htmlspecialchars($item['nome'] ?? '') ?></h4>
                     <div class="produto-preco">
-                      R$ <?= number_format($item['preco'], 2, ',', '.') ?>
+                      R$ <?= number_format((float)($item['preco'] ?? 0), 2, ',', '.') ?>
                     </div>
                   </div>
 
@@ -182,7 +179,7 @@ $totalItens = count($itens);
         </div>
       </div>
 
-            <div class="modal-carrinho-rodape">
+      <div class="modal-carrinho-rodape">
         <div class="cliente-pedido-form">
           <div class="campo-pedido">
             <label for="nomeCliente">Seu nome</label>
@@ -208,255 +205,255 @@ $totalItens = count($itens);
   </div>
 
   <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const carrinho = {};
+    document.addEventListener('DOMContentLoaded', function () {
+      const carrinho = {};
 
-  const carrinhoQtdEl = document.getElementById('carrinhoQtd');
-  const carrinhoTotalEl = document.getElementById('carrinhoTotal');
-  const modalCarrinhoTotalEl = document.getElementById('modalCarrinhoTotal');
-  const listaCarrinhoEl = document.getElementById('listaCarrinho');
+      const carrinhoQtdEl = document.getElementById('carrinhoQtd');
+      const carrinhoTotalEl = document.getElementById('carrinhoTotal');
+      const modalCarrinhoTotalEl = document.getElementById('modalCarrinhoTotal');
+      const listaCarrinhoEl = document.getElementById('listaCarrinho');
 
-  const modalCarrinho = document.getElementById('modalCarrinho');
-  const abrirCarrinhoBtn = document.getElementById('abrirCarrinho');
-  const fecharCarrinhoBtn = document.getElementById('fecharCarrinho');
-  const finalizarPedidoBtn = document.getElementById('finalizarPedido');
-  const nomeClienteEl = document.getElementById('nomeCliente');
-  const enderecoClienteEl = document.getElementById('enderecoCliente');
+      const modalCarrinho = document.getElementById('modalCarrinho');
+      const abrirCarrinhoBtn = document.getElementById('abrirCarrinho');
+      const fecharCarrinhoBtn = document.getElementById('fecharCarrinho');
+      const finalizarPedidoBtn = document.getElementById('finalizarPedido');
+      const nomeClienteEl = document.getElementById('nomeCliente');
+      const enderecoClienteEl = document.getElementById('enderecoCliente');
 
-  function formatarMoeda(valor) {
-    return Number(valor).toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  }
-
-  function abrirModalCarrinho() {
-    if (!modalCarrinho) return;
-    modalCarrinho.style.display = 'flex';
-    modalCarrinho.classList.add('ativo');
-    document.body.classList.add('modal-open');
-  }
-
-  function fecharModalCarrinho() {
-    if (!modalCarrinho) return;
-    modalCarrinho.classList.remove('ativo');
-    document.body.classList.remove('modal-open');
-
-    setTimeout(() => {
-      if (!modalCarrinho.classList.contains('ativo')) {
-        modalCarrinho.style.display = 'none';
+      function formatarMoeda(valor) {
+        return Number(valor).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
       }
-    }, 250);
-  }
 
-  function alterarQuantidadeVisual(card, quantidade) {
-    const qtdEl = card.querySelector('.quantidade');
-    const addBtn = card.querySelector('.btn-add-carrinho');
-    const qtdFinal = Math.max(0, quantidade);
+      function abrirModalCarrinho() {
+        if (!modalCarrinho) return;
+        modalCarrinho.style.display = 'flex';
+        modalCarrinho.classList.add('ativo');
+        document.body.classList.add('modal-open');
+      }
 
-    qtdEl.dataset.qtd = qtdFinal;
-    qtdEl.textContent = qtdFinal;
+      function fecharModalCarrinho() {
+        if (!modalCarrinho) return;
+        modalCarrinho.classList.remove('ativo');
+        document.body.classList.remove('modal-open');
 
-    if (qtdFinal > 0) {
-      addBtn.classList.add('ativo');
-      addBtn.textContent = 'Adicionado';
-    } else {
-      addBtn.classList.remove('ativo');
-      addBtn.textContent = 'Adicionar';
-    }
-  }
+        setTimeout(() => {
+          if (!modalCarrinho.classList.contains('ativo')) {
+            modalCarrinho.style.display = 'none';
+          }
+        }, 250);
+      }
 
-  function renderizarModalCarrinho() {
-    if (!listaCarrinhoEl) return;
-
-    const itens = Object.values(carrinho);
-
-    if (itens.length === 0) {
-      listaCarrinhoEl.innerHTML = `
-        <div class="carrinho-vazio">
-          <div class="carrinho-vazio-icone">🛒</div>
-          <h4>Seu carrinho está vazio</h4>
-          <p>Adicione itens para visualizar seu pedido aqui.</p>
-        </div>
-      `;
-      return;
-    }
-
-    let html = '';
-
-    itens.forEach(item => {
-      const subtotal = item.preco * item.quantidade;
-
-      html += `
-        <div class="item-carrinho-modal">
-          <div class="item-carrinho-info">
-            <h4>${item.nome}</h4>
-            <p>Quantidade: ${item.quantidade}</p>
-          </div>
-
-          <div class="item-carrinho-lado">
-            <span class="item-carrinho-subtotal">R$ ${formatarMoeda(subtotal)}</span>
-
-            <div class="item-carrinho-acoes">
-              <button type="button" class="mini-qtd-btn" data-id="${item.id}" data-delta="-1">−</button>
-              <span>${item.quantidade}</span>
-              <button type="button" class="mini-qtd-btn" data-id="${item.id}" data-delta="1">+</button>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
-    listaCarrinhoEl.innerHTML = html;
-
-    listaCarrinhoEl.querySelectorAll('.mini-qtd-btn').forEach(btn => {
-      btn.addEventListener('click', function () {
-        const id = this.dataset.id;
-        const delta = parseInt(this.dataset.delta, 10);
-
-        const card = document.querySelector('.produto-card[data-id="' + id + '"]');
-        if (!card) return;
-
+      function alterarQuantidadeVisual(card, quantidade) {
         const qtdEl = card.querySelector('.quantidade');
-        const qtdAtual = parseInt(qtdEl.dataset.qtd, 10) || 0;
+        const addBtn = card.querySelector('.btn-add-carrinho');
+        const qtdFinal = Math.max(0, quantidade);
 
-        alterarQuantidadeVisual(card, qtdAtual + delta);
-        atualizarCarrinho();
-      });
-    });
-  }
+        qtdEl.dataset.qtd = qtdFinal;
+        qtdEl.textContent = qtdFinal;
 
-  function atualizarCarrinho() {
-    let totalItens = 0;
-    let totalValor = 0;
-
-    document.querySelectorAll('.produto-card').forEach(card => {
-      const id = card.dataset.id;
-      const nome = card.dataset.nome;
-      const preco = parseFloat(card.dataset.preco) || 0;
-      const qtdEl = card.querySelector('.quantidade');
-      const qtd = parseInt(qtdEl.dataset.qtd, 10) || 0;
-
-      if (qtd > 0) {
-        carrinho[id] = {
-          id: id,
-          nome: nome,
-          preco: preco,
-          quantidade: qtd
-        };
-      } else {
-        delete carrinho[id];
+        if (qtdFinal > 0) {
+          addBtn.classList.add('ativo');
+          addBtn.textContent = 'Adicionado';
+        } else {
+          addBtn.classList.remove('ativo');
+          addBtn.textContent = 'Adicionar';
+        }
       }
 
-      totalItens += qtd;
-      totalValor += qtd * preco;
-    });
+      function renderizarModalCarrinho() {
+        if (!listaCarrinhoEl) return;
 
-    if (carrinhoQtdEl) carrinhoQtdEl.textContent = totalItens;
-    if (carrinhoTotalEl) carrinhoTotalEl.textContent = formatarMoeda(totalValor);
-    if (modalCarrinhoTotalEl) modalCarrinhoTotalEl.textContent = formatarMoeda(totalValor);
+        const itens = Object.values(carrinho);
 
-    renderizarModalCarrinho();
-  }
+        if (itens.length === 0) {
+          listaCarrinhoEl.innerHTML = `
+            <div class="carrinho-vazio">
+              <div class="carrinho-vazio-icone">🛒</div>
+              <h4>Seu carrinho está vazio</h4>
+              <p>Adicione itens para visualizar seu pedido aqui.</p>
+            </div>
+          `;
+          return;
+        }
 
-  document.querySelectorAll('.produto-card').forEach(card => {
-    const diminuirBtn = card.querySelector('.diminuir');
-    const aumentarBtn = card.querySelector('.aumentar');
-    const addBtn = card.querySelector('.btn-add-carrinho');
-    const qtdEl = card.querySelector('.quantidade');
+        let html = '';
 
-    function setQuantidade(valor) {
-      alterarQuantidadeVisual(card, valor);
+        itens.forEach(item => {
+          const subtotal = item.preco * item.quantidade;
+
+          html += `
+            <div class="item-carrinho-modal">
+              <div class="item-carrinho-info">
+                <h4>${item.nome}</h4>
+                <p>Quantidade: ${item.quantidade}</p>
+              </div>
+
+              <div class="item-carrinho-lado">
+                <span class="item-carrinho-subtotal">R$ ${formatarMoeda(subtotal)}</span>
+
+                <div class="item-carrinho-acoes">
+                  <button type="button" class="mini-qtd-btn" data-id="${item.id}" data-delta="-1">−</button>
+                  <span>${item.quantidade}</span>
+                  <button type="button" class="mini-qtd-btn" data-id="${item.id}" data-delta="1">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        listaCarrinhoEl.innerHTML = html;
+
+        listaCarrinhoEl.querySelectorAll('.mini-qtd-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const id = this.dataset.id;
+            const delta = parseInt(this.dataset.delta, 10);
+
+            const card = document.querySelector('.produto-card[data-id="' + id + '"]');
+            if (!card) return;
+
+            const qtdEl = card.querySelector('.quantidade');
+            const qtdAtual = parseInt(qtdEl.dataset.qtd, 10) || 0;
+
+            alterarQuantidadeVisual(card, qtdAtual + delta);
+            atualizarCarrinho();
+          });
+        });
+      }
+
+      function atualizarCarrinho() {
+        let totalItens = 0;
+        let totalValor = 0;
+
+        document.querySelectorAll('.produto-card').forEach(card => {
+          const id = card.dataset.id;
+          const nome = card.dataset.nome;
+          const preco = parseFloat(card.dataset.preco) || 0;
+          const qtdEl = card.querySelector('.quantidade');
+          const qtd = parseInt(qtdEl.dataset.qtd, 10) || 0;
+
+          if (qtd > 0) {
+            carrinho[id] = {
+              id: id,
+              nome: nome,
+              preco: preco,
+              quantidade: qtd
+            };
+          } else {
+            delete carrinho[id];
+          }
+
+          totalItens += qtd;
+          totalValor += qtd * preco;
+        });
+
+        if (carrinhoQtdEl) carrinhoQtdEl.textContent = totalItens;
+        if (carrinhoTotalEl) carrinhoTotalEl.textContent = formatarMoeda(totalValor);
+        if (modalCarrinhoTotalEl) modalCarrinhoTotalEl.textContent = formatarMoeda(totalValor);
+
+        renderizarModalCarrinho();
+      }
+
+      document.querySelectorAll('.produto-card').forEach(card => {
+        const diminuirBtn = card.querySelector('.diminuir');
+        const aumentarBtn = card.querySelector('.aumentar');
+        const addBtn = card.querySelector('.btn-add-carrinho');
+        const qtdEl = card.querySelector('.quantidade');
+
+        function setQuantidade(valor) {
+          alterarQuantidadeVisual(card, valor);
+          atualizarCarrinho();
+        }
+
+        if (diminuirBtn) {
+          diminuirBtn.addEventListener('click', () => {
+            setQuantidade((parseInt(qtdEl.dataset.qtd, 10) || 0) - 1);
+          });
+        }
+
+        if (aumentarBtn) {
+          aumentarBtn.addEventListener('click', () => {
+            setQuantidade((parseInt(qtdEl.dataset.qtd, 10) || 0) + 1);
+          });
+        }
+
+        if (addBtn) {
+          addBtn.addEventListener('click', () => {
+            const atual = parseInt(qtdEl.dataset.qtd, 10) || 0;
+            setQuantidade(atual === 0 ? 1 : atual);
+          });
+        }
+      });
+
+      if (abrirCarrinhoBtn) {
+        abrirCarrinhoBtn.addEventListener('click', function () {
+          abrirModalCarrinho();
+        });
+      }
+
+      if (fecharCarrinhoBtn) {
+        fecharCarrinhoBtn.addEventListener('click', function () {
+          fecharModalCarrinho();
+        });
+      }
+
+      if (modalCarrinho) {
+        modalCarrinho.style.display = 'none';
+
+        modalCarrinho.addEventListener('click', function (e) {
+          if (e.target === modalCarrinho) {
+            fecharModalCarrinho();
+          }
+        });
+      }
+
+      if (finalizarPedidoBtn) {
+        finalizarPedidoBtn.addEventListener('click', function () {
+          const itens = Object.values(carrinho);
+
+          if (itens.length === 0) {
+            alert('Seu carrinho está vazio.');
+            return;
+          }
+
+          const nomeCliente = nomeClienteEl ? nomeClienteEl.value.trim() : '';
+          const enderecoCliente = enderecoClienteEl ? enderecoClienteEl.value.trim() : '';
+
+          if (nomeCliente === '') {
+            alert('Por favor, informe seu nome.');
+            if (nomeClienteEl) nomeClienteEl.focus();
+            return;
+          }
+
+          if (enderecoCliente === '') {
+            alert('Por favor, informe seu endereço.');
+            if (enderecoClienteEl) enderecoClienteEl.focus();
+            return;
+          }
+
+          let mensagem = 'Novo pedido:%0A%0A';
+          mensagem += 'Nome: ' + nomeCliente + '%0A';
+          mensagem += 'Endereço: ' + enderecoCliente + '%0A%0A';
+          mensagem += 'Itens do pedido:%0A';
+
+          let total = 0;
+
+          itens.forEach(item => {
+            const subtotal = item.preco * item.quantidade;
+            total += subtotal;
+            mensagem += '- ' + item.nome + ' | ' + item.quantidade + 'x | R$ ' + formatarMoeda(subtotal) + '%0A';
+          });
+
+          mensagem += '%0ATotal: R$ ' + formatarMoeda(total);
+
+          alert(decodeURIComponent(mensagem));
+        });
+      }
+
       atualizarCarrinho();
-    }
-
-    if (diminuirBtn) {
-      diminuirBtn.addEventListener('click', () => {
-        setQuantidade((parseInt(qtdEl.dataset.qtd, 10) || 0) - 1);
-      });
-    }
-
-    if (aumentarBtn) {
-      aumentarBtn.addEventListener('click', () => {
-        setQuantidade((parseInt(qtdEl.dataset.qtd, 10) || 0) + 1);
-      });
-    }
-
-    if (addBtn) {
-      addBtn.addEventListener('click', () => {
-        const atual = parseInt(qtdEl.dataset.qtd, 10) || 0;
-        setQuantidade(atual === 0 ? 1 : atual);
-      });
-    }
-  });
-
-  if (abrirCarrinhoBtn) {
-    abrirCarrinhoBtn.addEventListener('click', function () {
-      abrirModalCarrinho();
     });
-  }
-
-  if (fecharCarrinhoBtn) {
-    fecharCarrinhoBtn.addEventListener('click', function () {
-      fecharModalCarrinho();
-    });
-  }
-
-  if (modalCarrinho) {
-    modalCarrinho.style.display = 'none';
-
-    modalCarrinho.addEventListener('click', function (e) {
-      if (e.target === modalCarrinho) {
-        fecharModalCarrinho();
-      }
-    });
-  }
-
-    if (finalizarPedidoBtn) {
-    finalizarPedidoBtn.addEventListener('click', function () {
-      const itens = Object.values(carrinho);
-
-      if (itens.length === 0) {
-        alert('Seu carrinho está vazio.');
-        return;
-      }
-
-      const nomeCliente = nomeClienteEl ? nomeClienteEl.value.trim() : '';
-      const enderecoCliente = enderecoClienteEl ? enderecoClienteEl.value.trim() : '';
-
-      if (nomeCliente === '') {
-        alert('Por favor, informe seu nome.');
-        if (nomeClienteEl) nomeClienteEl.focus();
-        return;
-      }
-
-      if (enderecoCliente === '') {
-        alert('Por favor, informe seu endereço.');
-        if (enderecoClienteEl) enderecoClienteEl.focus();
-        return;
-      }
-
-      let mensagem = 'Novo pedido:%0A%0A';
-      mensagem += 'Nome: ' + nomeCliente + '%0A';
-      mensagem += 'Endereço: ' + enderecoCliente + '%0A%0A';
-      mensagem += 'Itens do pedido:%0A';
-
-      let total = 0;
-
-      itens.forEach(item => {
-        const subtotal = item.preco * item.quantidade;
-        total += subtotal;
-        mensagem += '- ' + item.nome + ' | ' + item.quantidade + 'x | R$ ' + formatarMoeda(subtotal) + '%0A';
-      });
-
-      mensagem += '%0ATotal: R$ ' + formatarMoeda(total);
-
-      alert(decodeURIComponent(mensagem));
-    });
-  }
-
-  atualizarCarrinho();
-});
-</script>
+  </script>
 </body>
 </html>
