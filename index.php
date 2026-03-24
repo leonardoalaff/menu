@@ -11,7 +11,8 @@ if (isset($_SESSION['usuario_id'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CardápioOn</title>
-  <link rel="stylesheet" href="style_index.css">
+  <link rel="stylesheet" href="style_index3.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body class="mobile-body">
 
@@ -33,9 +34,9 @@ if (isset($_SESSION['usuario_id'])) {
       </p>
 
       <div class="hero-mini-list">
-        <span>⚡ Rápido</span>
-        <span>📱 Mobile</span>
-        <span>✨ Bonito</span>
+        <span><i class="ri-flashlight-line"></i> Rápido</span>
+        <span><i class="ri-smartphone-line"></i> Mobile</span>
+        <span><i class="ri-magic-line"></i> Bonito</span>
       </div>
     </section>
 
@@ -48,7 +49,7 @@ if (isset($_SESSION['usuario_id'])) {
       <div class="input-group">
         <label for="email">E-mail</label>
         <div class="input-wrap">
-          <span class="input-icon">✉</span>
+          <span class="input-icon"><i class="ri-mail-line"></i></span>
           <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
         </div>
       </div>
@@ -56,15 +57,18 @@ if (isset($_SESSION['usuario_id'])) {
       <div class="input-group">
         <label for="senha">Senha</label>
         <div class="input-wrap">
-          <span class="input-icon">🔒</span>
+          <span class="input-icon"><i class="ri-lock-2-line"></i></span>
           <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
-          <button type="button" class="toggle-password" onclick="toggleSenha()">👁</button>
+          <button type="button" class="toggle-password" onclick="toggleSenha()">
+            <i class="ri-eye-line"></i>
+          </button>
         </div>
       </div>
 
       <button type="submit" class="btn-primary" id="btnLogin">
-  Entrar
-</button>
+        Entrar
+      </button>
+
       <a href="cadastrar.php" class="link-btn">Criar minha conta</a>
     </form>
 
@@ -75,7 +79,9 @@ if (isset($_SESSION['usuario_id'])) {
       </div>
 
       <div class="benefit-item">
-        <div class="benefit-icon">✨</div>
+        <div class="benefit-icon">
+          <i class="ri-layout-4-line"></i>
+        </div>
         <div>
           <strong>Visual profissional</strong>
           <p>Deixe seu cardápio mais bonito, organizado e atrativo para seus clientes.</p>
@@ -83,7 +89,9 @@ if (isset($_SESSION['usuario_id'])) {
       </div>
 
       <div class="benefit-item">
-        <div class="benefit-icon">⚙</div>
+        <div class="benefit-icon">
+          <i class="ri-edit-2-line"></i>
+        </div>
         <div>
           <strong>Fácil de editar</strong>
           <p>Altere itens, descrições, categorias e preços em poucos segundos.</p>
@@ -91,7 +99,9 @@ if (isset($_SESSION['usuario_id'])) {
       </div>
 
       <div class="benefit-item">
-        <div class="benefit-icon">📱</div>
+        <div class="benefit-icon">
+          <i class="ri-smartphone-line"></i>
+        </div>
         <div>
           <strong>Feito para celular</strong>
           <p>Uma experiência pensada primeiro para mobile, mais fluida e agradável.</p>
@@ -104,24 +114,24 @@ if (isset($_SESSION['usuario_id'])) {
   <script>
     function toggleSenha() {
       const senhaInput = document.getElementById('senha');
-      const botao = document.querySelector('.toggle-password');
+      const icone = document.querySelector('.toggle-password i');
 
       if (senhaInput.type === 'password') {
         senhaInput.type = 'text';
-        botao.textContent = '🙈';
+        icone.className = 'ri-eye-off-line';
       } else {
         senhaInput.type = 'password';
-        botao.textContent = '👁';
+        icone.className = 'ri-eye-line';
       }
     }
   </script>
 
   <script>
-document.querySelector("form").addEventListener("submit", function() {
-  const btn = document.getElementById("btnLogin");
-  btn.textContent = "Entrando...";
-  btn.disabled = true;
-});
-</script>
+    document.querySelector("form").addEventListener("submit", function() {
+      const btn = document.getElementById("btnLogin");
+      btn.textContent = "Entrando...";
+      btn.disabled = true;
+    });
+  </script>
 </body>
 </html>

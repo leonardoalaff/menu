@@ -15,7 +15,7 @@ $cardapio = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$cardapio) {
     $stmt = $db->prepare("INSERT INTO cardapios (usuario_id, nome_negocio, cor_principal, descricao) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$usuario_id, "Meu Negócio", "#7B2FF7", "Seu cardápio digital"]);
+    $stmt->execute([$usuario_id, "Meu Negócio", "#3b8edb", "Seu cardápio digital"]);
 
     $stmt = $db->prepare("SELECT * FROM cardapios WHERE usuario_id = ?");
     $stmt->execute([$usuario_id]);
@@ -34,7 +34,7 @@ $totalItens = count($itens);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel - CardápioOn</title>
-  <link rel="stylesheet" href="style_painel.css">
+  <link rel="stylesheet" href="style_painel2.css">
 </head>
 <body class="mobile-body">
 
