@@ -15,7 +15,7 @@ $cardapio = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$cardapio) {
     $stmt = $db->prepare("INSERT INTO cardapios (usuario_id, nome_negocio, cor_principal, descricao) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$usuario_id, "Meu Negócio", "#FF5A1F", "Seu cardápio digital"]);
+    $stmt->execute([$usuario_id, "Meu Negócio", "#7B2FF7", "Seu cardápio digital"]);
 
     $stmt = $db->prepare("SELECT * FROM cardapios WHERE usuario_id = ?");
     $stmt->execute([$usuario_id]);
@@ -25,6 +25,8 @@ if (!$cardapio) {
 $stmt = $db->prepare("SELECT * FROM itens WHERE cardapio_id = ? ORDER BY categoria ASC, nome ASC");
 $stmt->execute([$cardapio['id']]);
 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$totalItens = count($itens);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -32,38 +34,87 @@ $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel - CardápioOn</title>
-  <link rel="stylesheet" href="style1.css">
+  <link rel="stylesheet" href="style_painel.css">
 </head>
 <body class="mobile-body">
+
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <div class="bg-shape shape-3"></div>
+
   <div class="mobile-app">
 
-    <div class="topbar">
-      <div>
+    <header class="topbar fade-up delay-1">
+      <div class="topbar-user">
         <small>Bem-vindo(a)</small>
         <h2><?= htmlspecialchars($_SESSION['usuario_nome']) ?></h2>
       </div>
       <a href="logout.php" class="btn-ghost">Sair</a>
-    </div>
+    </header>
 
-    <div class="hero-card">
+    <section class="hero-card fade-up delay-2">
+      <span class="hero-badge">Painel do seu cardápio</span>
       <div class="logo-badge"></div>
-      <p>Gerencie seu cardápio digital e veja como ele está aparecendo para seus clientes.</p>
-    </div>
+      <h1><?= htmlspecialchars($cardapio['nome_negocio']) ?></h1>
+      <p>Gerencie seu cardápio digital, edite os dados do seu negócio e acompanhe como ele aparece para seus clientes.</p>
 
-    <div class="preview-card" style="border-left-color: <?= htmlspecialchars($cardapio['cor_principal']) ?>;">
-      <h3><?= htmlspecialchars($cardapio['nome_negocio']) ?></h3>
+      <div class="hero-mini-list">
+        <span><?= $totalItens ?> item(ns)</span>
+        <span>Mobile</span>
+        <span>Online</span>
+      </div>
+    </section>
+
+    <section class="stats-grid fade-up delay-2">
+      <div class="stat-card">
+        <small>Total de itens</small>
+        <strong><?= $totalItens ?></strong>
+      </div>
+
+      <div class="stat-card">
+        <small>Cor principal</small>
+        <div class="stat-color">
+          <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_principal']) ?>;"></span>
+          <strong><?= htmlspecialchars($cardapio['cor_principal']) ?></strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview-card fade-up delay-2">
+      <div class="preview-top">
+        <div>
+          <small class="section-mini-title">Prévia do cardápio</small>
+          <h3><?= htmlspecialchars($cardapio['nome_negocio']) ?></h3>
+        </div>
+        <span class="preview-badge">Ao vivo</span>
+      </div>
+
       <p><?= htmlspecialchars($cardapio['descricao']) ?></p>
-      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_principal']) ?>;"></span>
-    </div>
 
-    <a href="visualizar_cardapio.php" class="btn-primary">Ver como o cliente vê</a>
+      <div class="preview-footer">
+        <div class="preview-color">
+          <span class="color-chip large" style="background: <?= htmlspecialchars($cardapio['cor_principal']) ?>;"></span>
+          <span>Identidade visual</span>
+        </div>
 
-    <form class="form-card" action="salvar_cardapio.php" method="POST">
-      <h3>Personalizar cardápio</h3>
-      <p class="form-subtitle">Atualize os dados principais e adicione novos itens.</p>
+        <a href="visualizar_cardapio.php" class="btn-primary btn-inline">Ver cardápio</a>
+      </div>
+    </section>
+
+    <form class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST">
+      <div class="section-header">
+        <div>
+          <small class="section-mini-title">Personalização</small>
+          <h3>Editar cardápio</h3>
+        </div>
+        <span class="section-badge">Principal</span>
+      </div>
+
+      <p class="form-subtitle">Atualize os dados do seu negócio e adicione novos itens ao cardápio.</p>
 
       <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
 
+      <label class="label-inline">Nome do negócio</label>
       <input
         type="text"
         name="nome_negocio"
@@ -72,44 +123,77 @@ $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
         required
       >
 
+      <label class="label-inline">Descrição</label>
       <textarea
         name="descricao"
         placeholder="Descrição do negócio"
       ><?= htmlspecialchars($cardapio['descricao']) ?></textarea>
 
       <label class="label-inline">Cor principal do cardápio</label>
-      <input type="color" name="cor_principal" value="<?= htmlspecialchars($cardapio['cor_principal']) ?>">
+      <div class="color-row">
+        <input type="color" name="cor_principal" value="<?= htmlspecialchars($cardapio['cor_principal']) ?>">
+        <div class="color-info">
+          <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_principal']) ?>;"></span>
+          <small>Escolha a cor que representa sua marca</small>
+        </div>
+      </div>
 
       <hr>
 
-      <h3>Adicionar novo item</h3>
+      <div class="section-header inner">
+        <div>
+          <small class="section-mini-title">Novo produto</small>
+          <h3>Adicionar item</h3>
+        </div>
+      </div>
 
-      <input type="text" name="item_nome" placeholder="Nome do item">
-      <input type="text" name="item_categoria" placeholder="Categoria">
+      <label class="label-inline">Nome do item</label>
+      <input type="text" name="item_nome" placeholder="Ex: X-Burguer Especial">
+
+      <label class="label-inline">Categoria</label>
+      <input type="text" name="item_categoria" placeholder="Ex: Hambúrgueres">
+
+      <label class="label-inline">Descrição do item</label>
       <textarea name="item_descricao" placeholder="Descrição do item"></textarea>
-      <input type="number" step="0.01" name="item_preco" placeholder="Preço">
+
+      <label class="label-inline">Preço</label>
+      <input type="number" step="0.01" name="item_preco" placeholder="Ex: 29.90">
 
       <button type="submit" class="btn-primary">Salvar alterações</button>
     </form>
 
-    <div class="list-card">
-      <h3>Itens do cardápio</h3>
+    <section class="list-card fade-up delay-3">
+      <div class="section-header">
+        <div>
+          <small class="section-mini-title">Seu conteúdo</small>
+          <h3>Itens do cardápio</h3>
+        </div>
+        <span class="section-badge"><?= $totalItens ?> item(ns)</span>
+      </div>
 
       <?php if (count($itens) > 0): ?>
         <?php foreach ($itens as $item): ?>
           <div class="menu-item">
-            <div>
-              <strong><?= htmlspecialchars($item['nome']) ?></strong>
-              <p><?= htmlspecialchars($item['descricao']) ?></p>
-              <small><?= htmlspecialchars($item['categoria'] ?: 'Geral') ?></small>
+            <div class="menu-item-left">
+              <div class="item-category-dot"></div>
+              <div>
+                <strong><?= htmlspecialchars($item['nome']) ?></strong>
+                <p><?= htmlspecialchars($item['descricao']) ?></p>
+                <small><?= htmlspecialchars($item['categoria'] ?: 'Geral') ?></small>
+              </div>
             </div>
+
             <span class="produto-preco">R$ <?= number_format($item['preco'], 2, ',', '.') ?></span>
           </div>
         <?php endforeach; ?>
       <?php else: ?>
-        <p class="empty">Nenhum item cadastrado ainda.</p>
+        <div class="empty-state">
+          <div class="empty-icon">🍽</div>
+          <h4>Nenhum item cadastrado</h4>
+          <p>Preencha o formulário acima para adicionar o primeiro item do seu cardápio.</p>
+        </div>
       <?php endif; ?>
-    </div>
+    </section>
 
   </div>
 </body>
