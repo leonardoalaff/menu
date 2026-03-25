@@ -15,7 +15,7 @@ $cardapio = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$cardapio) {
     $stmt = $db->prepare("INSERT INTO cardapios (usuario_id, nome_negocio, cor_principal, descricao) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$usuario_id, "Meu Negócio", "#3b8edb", "Seu cardápio digital"]);
+    $stmt->execute([$usuario_id, "Meu Negócio", "#1677ff", "Seu cardápio digital"]);
 
     $stmt = $db->prepare("SELECT * FROM cardapios WHERE usuario_id = ?");
     $stmt->execute([$usuario_id]);
@@ -41,6 +41,8 @@ foreach ($itens as $item) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel - CardápioOn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="style_painel3.css">
 </head>
 <body class="mobile-body">
@@ -56,24 +58,36 @@ foreach ($itens as $item) {
         <small>Bem-vindo(a)</small>
         <h2><?= htmlspecialchars($_SESSION['usuario_nome']) ?></h2>
       </div>
-      <a href="logout.php" class="btn-ghost">Sair</a>
+      <a href="logout.php" class="btn-ghost">
+        <i class="ri-logout-box-r-line"></i>
+        <span>Sair</span>
+      </a>
     </header>
 
     <section class="hero-card fade-up delay-2">
-      <span class="hero-badge">Painel do seu cardápio</span>
+      <span class="hero-badge">
+        <i class="ri-store-2-line"></i>
+        Painel do seu cardápio
+      </span>
+
       <div class="logo-badge"></div>
+
       <h1><?= htmlspecialchars($cardapio['nome_negocio']) ?></h1>
-      <p>Gerencie seu cardápio digital, edite os dados do seu negócio e acompanhe como ele aparece para seus clientes.</p>
+      <p>
+        Gerencie seu cardápio digital, edite os dados do seu negócio e acompanhe
+        como ele aparece para seus clientes.
+      </p>
 
       <div class="hero-mini-list">
-        <span><?= $totalItens ?> item(ns)</span>
-        <span>Mobile</span>
-        <span>Online</span>
+        <span><i class="ri-restaurant-line"></i> <?= $totalItens ?> item(ns)</span>
+        <span><i class="ri-smartphone-line"></i> Mobile</span>
+        <span><i class="ri-global-line"></i> Online</span>
       </div>
     </section>
 
     <section class="dashboard-grid fade-up delay-2">
       <div class="dashboard-left">
+
         <section class="stats-grid">
           <div class="stat-card">
             <small>Total de itens</small>
@@ -109,25 +123,25 @@ foreach ($itens as $item) {
 
           <div class="quick-actions-grid">
             <a href="visualizar_cardapio.php" class="quick-action-box">
-              <span class="quick-icon">👁</span>
+              <span class="quick-icon"><i class="ri-eye-line"></i></span>
               <strong>Ver cardápio</strong>
               <small>Abrir visualização</small>
             </a>
 
             <a href="#form-editar" class="quick-action-box">
-              <span class="quick-icon">✏</span>
+              <span class="quick-icon"><i class="ri-edit-line"></i></span>
               <strong>Editar dados</strong>
               <small>Atualizar negócio</small>
             </a>
 
             <a href="#novo-item" class="quick-action-box">
-              <span class="quick-icon">➕</span>
+              <span class="quick-icon"><i class="ri-add-line"></i></span>
               <strong>Novo item</strong>
               <small>Adicionar produto</small>
             </a>
 
             <a href="#lista-itens" class="quick-action-box">
-              <span class="quick-icon">🍽</span>
+              <span class="quick-icon"><i class="ri-restaurant-2-line"></i></span>
               <strong>Seus itens</strong>
               <small>Gerenciar lista</small>
             </a>
@@ -275,66 +289,66 @@ foreach ($itens as $item) {
       </div>
 
       <?php if (count($itens) > 0): ?>
-  <div class="items-grid-panel compact-items-grid <?= $totalItens > 5 ? 'grid-2' : '' ?>">
-    <?php foreach ($itens as $item): ?>
-      <div class="ifood-item-card">
-        <div class="ifood-item-top">
-          <?php if (!empty($item['imagem'])): ?>
-            <img class="ifood-item-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
-          <?php else: ?>
-            <div class="ifood-item-thumb ifood-item-thumb-placeholder">🍽</div>
-          <?php endif; ?>
+        <div class="items-grid-panel compact-items-grid <?= $totalItens > 5 ? 'grid-2' : '' ?>">
+          <?php foreach ($itens as $item): ?>
+            <div class="ifood-item-card">
+              <div class="ifood-item-top">
+                <?php if (!empty($item['imagem'])): ?>
+                  <img class="ifood-item-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+                <?php else: ?>
+                  <div class="ifood-item-thumb ifood-item-thumb-placeholder"><i class="ri-restaurant-line"></i></div>
+                <?php endif; ?>
 
-          <div class="ifood-item-info">
-            <div class="ifood-item-head">
-              <h4><?= htmlspecialchars($item['nome']) ?></h4>
-              <span class="ifood-price">R$ <?= number_format((float)$item['preco'], 2, ',', '.') ?></span>
+                <div class="ifood-item-info">
+                  <div class="ifood-item-head">
+                    <h4><?= htmlspecialchars($item['nome']) ?></h4>
+                    <span class="ifood-price">R$ <?= number_format((float)$item['preco'], 2, ',', '.') ?></span>
+                  </div>
+
+                  <?php if (!empty($item['descricao'])): ?>
+                    <p><?= htmlspecialchars($item['descricao']) ?></p>
+                  <?php else: ?>
+                    <p class="item-desc-empty">Sem descrição cadastrada.</p>
+                  <?php endif; ?>
+
+                  <div class="ifood-tags">
+                    <span class="ifood-tag"><?= htmlspecialchars(!empty($item['categoria']) ? $item['categoria'] : 'Geral') ?></span>
+                    <span class="ifood-tag soft"><?= !empty($item['imagem']) ? 'Com foto' : 'Sem foto' ?></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ifood-actions">
+                <button type="button" class="btn-secondary ifood-btn toggle-upload-btn" data-target="upload-<?= (int)$item['id'] ?>">
+                  <?= !empty($item['imagem']) ? 'Trocar foto' : 'Adicionar foto' ?>
+                </button>
+
+                <?php if (!empty($item['imagem'])): ?>
+                  <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a foto deste item?');">
+                    <input type="hidden" name="acao" value="remover_foto_item">
+                    <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+                    <button type="submit" class="btn-secondary btn-danger-lite ifood-btn">Remover</button>
+                  </form>
+                <?php endif; ?>
+              </div>
+
+              <div class="compact-upload-panel" id="upload-<?= (int)$item['id'] ?>">
+                <form action="salvar_cardapio.php" method="POST" enctype="multipart/form-data" class="compact-upload-form">
+                  <input type="hidden" name="acao" value="atualizar_foto_item">
+                  <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+
+                  <div class="compact-upload-row">
+                    <input type="file" name="nova_item_imagem" accept="image/*" required>
+                    <button type="submit" class="btn-secondary">Salvar foto</button>
+                  </div>
+                </form>
+              </div>
             </div>
-
-            <?php if (!empty($item['descricao'])): ?>
-              <p><?= htmlspecialchars($item['descricao']) ?></p>
-            <?php else: ?>
-              <p class="item-desc-empty">Sem descrição cadastrada.</p>
-            <?php endif; ?>
-
-            <div class="ifood-tags">
-              <span class="ifood-tag"><?= htmlspecialchars(!empty($item['categoria']) ? $item['categoria'] : 'Geral') ?></span>
-              <span class="ifood-tag soft"><?= !empty($item['imagem']) ? 'Com foto' : 'Sem foto' ?></span>
-            </div>
-          </div>
+          <?php endforeach; ?>
         </div>
-
-        <div class="ifood-actions">
-          <button type="button" class="btn-secondary ifood-btn toggle-upload-btn" data-target="upload-<?= (int)$item['id'] ?>">
-            <?= !empty($item['imagem']) ? 'Trocar foto' : 'Adicionar foto' ?>
-          </button>
-
-          <?php if (!empty($item['imagem'])): ?>
-            <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a foto deste item?');">
-              <input type="hidden" name="acao" value="remover_foto_item">
-              <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
-              <button type="submit" class="btn-secondary btn-danger-lite ifood-btn">Remover</button>
-            </form>
-          <?php endif; ?>
-        </div>
-
-        <div class="compact-upload-panel" id="upload-<?= (int)$item['id'] ?>">
-          <form action="salvar_cardapio.php" method="POST" enctype="multipart/form-data" class="compact-upload-form">
-            <input type="hidden" name="acao" value="atualizar_foto_item">
-            <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
-
-            <div class="compact-upload-row">
-              <input type="file" name="nova_item_imagem" accept="image/*" required>
-              <button type="submit" class="btn-secondary">Salvar foto</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    <?php endforeach; ?>
-  </div>
-<?php else: ?>
+      <?php else: ?>
         <div class="empty-state">
-          <div class="empty-icon">🍽</div>
+          <div class="empty-icon"><i class="ri-restaurant-2-line"></i></div>
           <h4>Nenhum item cadastrado</h4>
           <p>Preencha o formulário acima para adicionar o primeiro item do seu cardápio.</p>
         </div>
