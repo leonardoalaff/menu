@@ -26,7 +26,7 @@ body.mobile-body {
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
-  padding-bottom: 120px;
+  padding-bottom: 110px;
 }
 
 body.modal-open {
@@ -422,11 +422,10 @@ body.modal-open {
 .carrinho-bar {
   position: fixed;
   left: 50%;
-  bottom: 5px;
   transform: translateX(-50%);
+  bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 999;
-  width: calc(100% - 20px);
-  max-width: 430px;
+  width: min(calc(100vw - 20px), 410px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -775,9 +774,11 @@ body.modal-open {
     font-size: 12px;
   }
 
-  .carrinho-bar {
+ .carrinho-bar {
+    width: min(calc(100vw - 16px), 410px);
     gap: 8px;
     padding: 10px 12px;
+    bottom: max(10px, env(safe-area-inset-bottom));
   }
 
   .btn-carrinho-finalizar {

@@ -29,7 +29,7 @@ $totalItens = count($itens);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visualização do Cardápio</title>
-  <link rel="stylesheet" href="style_ver_cardapio3.css">
+  <link rel="stylesheet" href="style_ver_cardapio4.css">
 </head>
 <body class="mobile-body">
 

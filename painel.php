@@ -275,70 +275,64 @@ foreach ($itens as $item) {
       </div>
 
       <?php if (count($itens) > 0): ?>
-        <div class="items-grid-panel compact-items-grid <?= $totalItens > 5 ? 'grid-3' : '' ?>">
-          <?php foreach ($itens as $item): ?>
-            <div class="item-panel-card compact-item-card">
-              <div class="compact-item-top">
-                <div class="compact-item-main">
-                  <?php if (!empty($item['imagem'])): ?>
-                    <img class="item-thumb compact-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
-                  <?php else: ?>
-                    <div class="compact-thumb compact-thumb-placeholder">🍽</div>
-                  <?php endif; ?>
+  <div class="items-grid-panel compact-items-grid <?= $totalItens > 5 ? 'grid-2' : '' ?>">
+    <?php foreach ($itens as $item): ?>
+      <div class="ifood-item-card">
+        <div class="ifood-item-top">
+          <?php if (!empty($item['imagem'])): ?>
+            <img class="ifood-item-thumb" src="<?= htmlspecialchars($item['imagem']) ?>" alt="<?= htmlspecialchars($item['nome']) ?>">
+          <?php else: ?>
+            <div class="ifood-item-thumb ifood-item-thumb-placeholder">🍽</div>
+          <?php endif; ?>
 
-                  <div class="compact-item-info">
-                    <div class="compact-item-head">
-                      <h4><?= htmlspecialchars($item['nome']) ?></h4>
-                      <span class="produto-preco compact-price">R$ <?= number_format((float)$item['preco'], 2, ',', '.') ?></span>
-                    </div>
-
-                    <?php if (!empty($item['descricao'])): ?>
-                      <p><?= htmlspecialchars($item['descricao']) ?></p>
-                    <?php else: ?>
-                      <p class="item-desc-empty">Sem descrição cadastrada.</p>
-                    <?php endif; ?>
-
-                    <div class="compact-meta-row">
-                      <span class="item-tag"><?= htmlspecialchars(!empty($item['categoria']) ? $item['categoria'] : 'Geral') ?></span>
-                      <?php if (!empty($item['imagem'])): ?>
-                        <span class="item-tag soft">Com foto</span>
-                      <?php else: ?>
-                        <span class="item-tag soft">Sem foto</span>
-                      <?php endif; ?>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="compact-actions-row">
-                <button type="button" class="btn-secondary toggle-upload-btn" data-target="upload-<?= (int)$item['id'] ?>">
-                  <?= !empty($item['imagem']) ? 'Trocar foto' : 'Adicionar foto' ?>
-                </button>
-
-                <?php if (!empty($item['imagem'])): ?>
-                  <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a foto deste item?');">
-                    <input type="hidden" name="acao" value="remover_foto_item">
-                    <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
-                    <button type="submit" class="btn-secondary btn-danger-lite compact-danger-btn">Remover foto</button>
-                  </form>
-                <?php endif; ?>
-              </div>
-
-              <div class="compact-upload-panel" id="upload-<?= (int)$item['id'] ?>">
-                <form action="salvar_cardapio.php" method="POST" enctype="multipart/form-data" class="compact-upload-form">
-                  <input type="hidden" name="acao" value="atualizar_foto_item">
-                  <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
-
-                  <div class="compact-upload-row">
-                    <input type="file" name="nova_item_imagem" accept="image/*" required>
-                    <button type="submit" class="btn-secondary">Salvar foto</button>
-                  </div>
-                </form>
-              </div>
+          <div class="ifood-item-info">
+            <div class="ifood-item-head">
+              <h4><?= htmlspecialchars($item['nome']) ?></h4>
+              <span class="ifood-price">R$ <?= number_format((float)$item['preco'], 2, ',', '.') ?></span>
             </div>
-          <?php endforeach; ?>
+
+            <?php if (!empty($item['descricao'])): ?>
+              <p><?= htmlspecialchars($item['descricao']) ?></p>
+            <?php else: ?>
+              <p class="item-desc-empty">Sem descrição cadastrada.</p>
+            <?php endif; ?>
+
+            <div class="ifood-tags">
+              <span class="ifood-tag"><?= htmlspecialchars(!empty($item['categoria']) ? $item['categoria'] : 'Geral') ?></span>
+              <span class="ifood-tag soft"><?= !empty($item['imagem']) ? 'Com foto' : 'Sem foto' ?></span>
+            </div>
+          </div>
         </div>
-      <?php else: ?>
+
+        <div class="ifood-actions">
+          <button type="button" class="btn-secondary ifood-btn toggle-upload-btn" data-target="upload-<?= (int)$item['id'] ?>">
+            <?= !empty($item['imagem']) ? 'Trocar foto' : 'Adicionar foto' ?>
+          </button>
+
+          <?php if (!empty($item['imagem'])): ?>
+            <form action="salvar_cardapio.php" method="POST" class="inline-action-form" onsubmit="return confirm('Remover a foto deste item?');">
+              <input type="hidden" name="acao" value="remover_foto_item">
+              <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+              <button type="submit" class="btn-secondary btn-danger-lite ifood-btn">Remover</button>
+            </form>
+          <?php endif; ?>
+        </div>
+
+        <div class="compact-upload-panel" id="upload-<?= (int)$item['id'] ?>">
+          <form action="salvar_cardapio.php" method="POST" enctype="multipart/form-data" class="compact-upload-form">
+            <input type="hidden" name="acao" value="atualizar_foto_item">
+            <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+
+            <div class="compact-upload-row">
+              <input type="file" name="nova_item_imagem" accept="image/*" required>
+              <button type="submit" class="btn-secondary">Salvar foto</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+<?php else: ?>
         <div class="empty-state">
           <div class="empty-icon">🍽</div>
           <h4>Nenhum item cadastrado</h4>
