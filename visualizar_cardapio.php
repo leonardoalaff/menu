@@ -17,16 +17,9 @@ if (!$cardapio) {
     die("Cardápio não encontrado.");
 }
 
-$stmt = $db->prepare("SELECT * FROM itens WHERE cardapio_id = ? ORDER BY categoria ASC, nome ASC");
+$stmt = $db->prepare("SELECT * FROM itens WHERE cardapio_id = ? ORDER BY nome ASC");
 $stmt->execute([$cardapio['id']]);
 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$itensPorCategoria = [];
-
-foreach ($itens as $item) {
-    $categoria = isset($item['categoria']) && trim($item['categoria']) !== '' ? $item['categoria'] : 'Geral';
-    $itensPorCategoria[$categoria][] = $item;
-}
 
 $totalItens = count($itens);
 ?>
@@ -36,7 +29,7 @@ $totalItens = count($itens);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visualização do Cardápio</title>
-  <link rel="stylesheet" href="style_ver_cardapio2.css">
+  <link rel="stylesheet" href="style_ver_cardapio3.css">
 </head>
 <body class="mobile-body">
 
@@ -77,65 +70,64 @@ $totalItens = count($itens);
       </div>
     </div>
 
-    <?php if (count($itens) > 0): ?>
-      <?php foreach ($itensPorCategoria as $categoria => $lista): ?>
-        <div class="categoria-card fade-up delay-3">
-          <div class="categoria-header">
-            <h3 class="categoria-titulo"><?= htmlspecialchars($categoria) ?></h3>
-            <span class="categoria-count"><?= count($lista) ?> item(ns)</span>
-          </div>
+    <?php if ($totalItens > 0): ?>
+      <div class="categoria-card fade-up delay-3">
+        <div class="categoria-header">
+          <h3 class="categoria-titulo">Produtos</h3>
+          <span class="categoria-count"><?= $totalItens ?> item(ns)</span>
+        </div>
 
-          <div class="produtos-grid">
-            <?php foreach ($lista as $item): ?>
-              <div
-                class="produto-card"
-                data-id="<?= (int)($item['id'] ?? 0) ?>"
-                data-nome="<?= htmlspecialchars($item['nome'] ?? '') ?>"
-                data-preco="<?= number_format((float)($item['preco'] ?? 0), 2, '.', '') ?>"
-              >
-                <div class="produto-imagem-wrap">
-                  <?php if (!empty($item['imagem'])): ?>
-                    <img
-                      class="produto-imagem"
-                      src="<?= htmlspecialchars($item['imagem']) ?>"
-                      alt="<?= htmlspecialchars($item['nome'] ?? '') ?>"
-                    >
-                  <?php else: ?>
-                    <div class="produto-imagem produto-sem-imagem">🍽</div>
-                  <?php endif; ?>
+        <div class="produtos-grid">
+          <?php foreach ($itens as $item): ?>
+            <div
+              class="produto-card"
+              data-id="<?= (int)($item['id'] ?? 0) ?>"
+              data-nome="<?= htmlspecialchars($item['nome'] ?? '') ?>"
+              data-preco="<?= number_format((float)($item['preco'] ?? 0), 2, '.', '') ?>"
+            >
+              <div class="produto-imagem-wrap">
+                <?php if (!empty($item['imagem'])): ?>
+                  <img
+                    class="produto-imagem"
+                    src="<?= htmlspecialchars($item['imagem']) ?>"
+                    alt="<?= htmlspecialchars($item['nome'] ?? '') ?>"
+                  >
+                <?php else: ?>
+                  <div class="produto-imagem produto-sem-imagem">🍽</div>
+                <?php endif; ?>
+              </div>
+
+              <div class="produto-conteudo">
+                <div class="produto-top">
+                  <h4><?= htmlspecialchars($item['nome'] ?? '') ?></h4>
+                  <div class="produto-preco">
+                    <span class="produto-preco-label"></span>
+                    <strong>R$ <?= number_format((float)($item['preco'] ?? 0), 2, ',', '.') ?></strong>
+                  </div>
                 </div>
 
-                <div class="produto-conteudo">
-                  <div class="produto-top">
-                    <h4><?= htmlspecialchars($item['nome'] ?? '') ?></h4>
-                    <div class="produto-preco">
-                      R$ <?= number_format((float)($item['preco'] ?? 0), 2, ',', '.') ?>
-                    </div>
+                <?php if (!empty($item['descricao'])): ?>
+                  <p><?= htmlspecialchars($item['descricao']) ?></p>
+                <?php else: ?>
+                  <p class="produto-desc-vazia">Delicioso item do cardápio.</p>
+                <?php endif; ?>
+
+                <div class="produto-acoes">
+                  <div class="quantidade-box">
+                    <button type="button" class="qtd-btn diminuir">−</button>
+                    <span class="quantidade" data-qtd="0">0</span>
+                    <button type="button" class="qtd-btn aumentar">+</button>
                   </div>
 
-                  <?php if (!empty($item['descricao'])): ?>
-                    <p><?= htmlspecialchars($item['descricao']) ?></p>
-                  <?php else: ?>
-                    <p class="produto-desc-vazia">Delicioso item do cardápio.</p>
-                  <?php endif; ?>
-
-                  <div class="produto-acoes">
-                    <div class="quantidade-box">
-                      <button type="button" class="qtd-btn diminuir">−</button>
-                      <span class="quantidade" data-qtd="0">0</span>
-                      <button type="button" class="qtd-btn aumentar">+</button>
-                    </div>
-
-                    <button type="button" class="btn-add-carrinho">
-                      Adicionar
-                    </button>
-                  </div>
+                  <button type="button" class="btn-add-carrinho">
+                    Adicionar
+                  </button>
                 </div>
               </div>
-            <?php endforeach; ?>
-          </div>
+            </div>
+          <?php endforeach; ?>
         </div>
-      <?php endforeach; ?>
+      </div>
     <?php else: ?>
       <div class="empty-card fade-up delay-3">
         <div class="empty-icon">🍽</div>
