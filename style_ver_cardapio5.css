@@ -23,8 +23,8 @@
 
 body.mobile-body {
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--cor-fundo-cardapio, var(--bg));
+  color: var(--cor-titulo-cabecalho, var(--text));
   overflow-x: hidden;
   padding-bottom: 110px;
 }
@@ -141,7 +141,7 @@ body.modal-open {
 }
 
 .cliente-cardapio-overlay p {
-  color: #4b5563;
+  color: var(--cor-descricao-cabecalho, #4b5563);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -304,7 +304,7 @@ body.modal-open {
   border: none;
   box-shadow: none;
   margin-bottom: 8px;
-  color: var(--accent);
+  color: var(--cor-preco, var(--accent));
   font-size: 14px;
   font-weight: 800;
 }
@@ -367,12 +367,12 @@ body.modal-open {
   font-weight: 700;
   font-size: 13px;
   color: #fff;
-  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: var(--cor-botao-adicionar, var(--primary));
   transition: var(--transition);
 }
 
 .btn-add-carrinho.ativo {
-  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+  background: var(--cor-botao-adicionar, var(--primary));
 }
 
 .empty-card {
@@ -474,7 +474,7 @@ body.modal-open {
 
 .btn-carrinho-finalizar {
   color: #fff;
-  background: linear-gradient(180deg, #ff2d20 0%, #ef4444 100%);
+  background: var(--cor-botao-ver-carrinho, #ef4444);
   min-width: 128px;
 }
 
@@ -595,7 +595,7 @@ body.modal-open {
 .item-carrinho-subtotal {
   font-size: 15px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--cor-preco, var(--accent));
 }
 
 .item-carrinho-acoes {
@@ -647,7 +647,7 @@ body.modal-open {
 
 .modal-total-box strong {
   font-size: 22px;
-  color: var(--accent);
+  color: var(--cor-preco, var(--accent));
 }
 
 .btn-finalizar-pedido {
@@ -656,7 +656,7 @@ body.modal-open {
   border-radius: 14px;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(180deg, #ff2d20 0%, #ef4444 100%);
+  background: var(--cor-botao-finalizar-pedido, #ef4444);
 }
 
 .cliente-pedido-form {
@@ -786,4 +786,40 @@ body.modal-open {
     padding: 11px 12px;
     font-size: 13px;
   }
+}
+
+.status-loja {
+  font-weight: 700;
+}
+
+.status-loja.aberto {
+  background-color: #2ec020;
+  color: white;
+}
+
+.status-loja.fechado {
+  background-color: #e20707;
+  color: white;
+}
+
+.hero-store-info {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.store-info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: #243b53;
+  backdrop-filter: blur(8px);
+}
+
+.store-info-icon {
+  flex-shrink: 0;
 }

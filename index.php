@@ -13,7 +13,7 @@ if (isset($_SESSION['usuario_id'])) {
   <title>CardápioOn | Cardápio digital para restaurantes, lanchonetes e delivery</title>
   <meta name="description" content="Crie seu cardápio digital profissional, organize produtos, destaque imagens, atualize preços em segundos e compartilhe com seus clientes.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style_index5.css">
+  <link rel="stylesheet" href="style_index6.css">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body class="landing-body">

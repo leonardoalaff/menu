@@ -80,9 +80,176 @@ function removerArquivoLocal(?string $caminho): void
     }
 }
 
+function cardapioPertenceAoUsuario(PDO $db, int $cardapio_id, int $usuario_id): bool
+{
+    $stmt = $db->prepare("
+        SELECT id
+        FROM cardapios
+        WHERE id = ? AND usuario_id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$cardapio_id, $usuario_id]);
+
+    return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function buscarCategoriaDoUsuario(PDO $db, int $categoria_id, int $cardapio_id, int $usuario_id): ?array
+{
+    $stmt = $db->prepare("
+        SELECT cat.id, cat.nome, cat.cardapio_id
+        FROM categorias cat
+        INNER JOIN cardapios c ON c.id = cat.cardapio_id
+        WHERE cat.id = ? AND cat.cardapio_id = ? AND c.usuario_id = ?
+        LIMIT 1
+    ");
+    $stmt->execute([$categoria_id, $cardapio_id, $usuario_id]);
+    $categoria = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $categoria ?: null;
+}
+
+function quantidadeItensNaCategoria(PDO $db, int $cardapio_id, string $nomeCategoria): int
+{
+    $stmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM itens
+        WHERE cardapio_id = ? AND categoria = ?
+    ");
+    $stmt->execute([$cardapio_id, $nomeCategoria]);
+
+    return (int) $stmt->fetchColumn();
+}
+
 $acao = $_POST['acao'] ?? 'salvar_cardapio';
 
 try {
+    if ($acao === 'criar_categoria') {
+        $cardapio_id = (int) ($_POST['cardapio_id'] ?? 0);
+        $categoria_nome = trim($_POST['categoria_nome'] ?? '');
+
+        if ($cardapio_id <= 0) {
+            flash('erro', 'Cardápio inválido para criar categoria.');
+            redirecionarPainel();
+        }
+
+        if (!cardapioPertenceAoUsuario($db, $cardapio_id, $usuario_id)) {
+            flash('erro', 'Cardápio não encontrado.');
+            redirecionarPainel();
+        }
+
+        if ($categoria_nome === '') {
+            flash('erro', 'Digite o nome da categoria.');
+            redirecionarPainel();
+        }
+
+        $stmt = $db->prepare("
+            SELECT id
+            FROM categorias
+            WHERE cardapio_id = ? AND LOWER(nome) = LOWER(?)
+            LIMIT 1
+        ");
+        $stmt->execute([$cardapio_id, $categoria_nome]);
+
+        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+            flash('erro', 'Essa categoria já existe.');
+            redirecionarPainel();
+        }
+
+        $stmt = $db->prepare("
+            INSERT INTO categorias (cardapio_id, nome)
+            VALUES (?, ?)
+        ");
+        $stmt->execute([$cardapio_id, $categoria_nome]);
+
+        flash('sucesso', 'Categoria criada com sucesso.');
+        redirecionarPainel();
+    }
+
+
+    if ($acao === 'editar_categoria') {
+        $cardapio_id = (int) ($_POST['cardapio_id'] ?? 0);
+        $categoria_id = (int) ($_POST['categoria_id'] ?? 0);
+        $categoria_nome = trim($_POST['categoria_nome'] ?? '');
+
+        if ($cardapio_id <= 0 || $categoria_id <= 0) {
+            flash('erro', 'Categoria inválida para edição.');
+            redirecionarPainel();
+        }
+
+        if ($categoria_nome === '') {
+            flash('erro', 'Digite o novo nome da categoria.');
+            redirecionarPainel();
+        }
+
+        $categoriaAtual = buscarCategoriaDoUsuario($db, $categoria_id, $cardapio_id, $usuario_id);
+
+        if (!$categoriaAtual) {
+            flash('erro', 'Categoria não encontrada.');
+            redirecionarPainel();
+        }
+
+        $stmt = $db->prepare("
+            SELECT id
+            FROM categorias
+            WHERE cardapio_id = ? AND LOWER(nome) = LOWER(?) AND id != ?
+            LIMIT 1
+        ");
+        $stmt->execute([$cardapio_id, $categoria_nome, $categoria_id]);
+
+        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+            flash('erro', 'Já existe outra categoria com esse nome.');
+            redirecionarPainel();
+        }
+
+        $stmt = $db->prepare("
+            UPDATE categorias
+            SET nome = ?
+            WHERE id = ? AND cardapio_id = ?
+        ");
+        $stmt->execute([$categoria_nome, $categoria_id, $cardapio_id]);
+
+        $stmt = $db->prepare("
+            UPDATE itens
+            SET categoria = ?
+            WHERE cardapio_id = ? AND categoria = ?
+        ");
+        $stmt->execute([$categoria_nome, $cardapio_id, $categoriaAtual['nome']]);
+
+        flash('sucesso', 'Categoria atualizada com sucesso.');
+        redirecionarPainel();
+    }
+
+    if ($acao === 'excluir_categoria') {
+        $cardapio_id = (int) ($_POST['cardapio_id'] ?? 0);
+        $categoria_id = (int) ($_POST['categoria_id'] ?? 0);
+
+        if ($cardapio_id <= 0 || $categoria_id <= 0) {
+            flash('erro', 'Categoria inválida para exclusão.');
+            redirecionarPainel();
+        }
+
+        $categoriaAtual = buscarCategoriaDoUsuario($db, $categoria_id, $cardapio_id, $usuario_id);
+
+        if (!$categoriaAtual) {
+            flash('erro', 'Categoria não encontrada.');
+            redirecionarPainel();
+        }
+
+        if (quantidadeItensNaCategoria($db, $cardapio_id, $categoriaAtual['nome']) > 0) {
+            flash('erro', 'Essa categoria está em uso e não pode ser excluída.');
+            redirecionarPainel();
+        }
+
+        $stmt = $db->prepare("
+            DELETE FROM categorias
+            WHERE id = ? AND cardapio_id = ?
+        ");
+        $stmt->execute([$categoria_id, $cardapio_id]);
+
+        flash('sucesso', 'Categoria excluída com sucesso.');
+        redirecionarPainel();
+    }
+
     if ($acao === 'remover_fundo') {
         $cardapio_id = (int) ($_POST['cardapio_id'] ?? 0);
 
@@ -196,6 +363,16 @@ try {
     $nome_negocio  = trim($_POST['nome_negocio'] ?? '');
     $descricao     = trim($_POST['descricao'] ?? '');
     $cor_principal = trim($_POST['cor_principal'] ?? '#3b8edb');
+    $cor_preco = trim($_POST['cor_preco'] ?? '#f97316');
+    $cor_botao_adicionar = trim($_POST['cor_botao_adicionar'] ?? '#ef4444');
+    $cor_botao_ver_carrinho = trim($_POST['cor_botao_ver_carrinho'] ?? '#ef4444');
+    $cor_botao_finalizar_pedido = trim($_POST['cor_botao_finalizar_pedido'] ?? '#ef4444');
+    $cor_titulo_cabecalho = trim($_POST['cor_titulo_cabecalho'] ?? '#2f2f2f');
+    $cor_descricao_cabecalho = trim($_POST['cor_descricao_cabecalho'] ?? '#4b5563');
+    $cor_fundo_cardapio = trim($_POST['cor_fundo_cardapio'] ?? '#f3f4f6');
+    $endereco_estabelecimento = trim($_POST['endereco_estabelecimento'] ?? '');
+    $horario_abertura = trim($_POST['horario_abertura'] ?? '18:00');
+    $horario_fechamento = trim($_POST['horario_fechamento'] ?? '23:00');
 
     $item_nome      = trim($_POST['item_nome'] ?? '');
     $item_categoria = trim($_POST['item_categoria'] ?? '');
@@ -204,7 +381,7 @@ try {
 
     if ($cardapio_id > 0) {
         $stmt = $db->prepare("
-            SELECT id, imagem_fundo
+            SELECT id, imagem_fundo, cor_preco, cor_botao_adicionar, cor_botao_ver_carrinho, cor_botao_finalizar_pedido, cor_titulo_cabecalho, cor_descricao_cabecalho, cor_fundo_cardapio, endereco_estabelecimento, horario_abertura, horario_fechamento
             FROM cardapios
             WHERE id = ? AND usuario_id = ?
             LIMIT 1
@@ -224,7 +401,7 @@ try {
 
             $stmt = $db->prepare("
                 UPDATE cardapios
-                SET nome_negocio = ?, descricao = ?, cor_principal = ?, imagem_fundo = ?
+                SET nome_negocio = ?, descricao = ?, cor_principal = ?, imagem_fundo = ?, cor_preco = ?, cor_botao_adicionar = ?, cor_botao_ver_carrinho = ?, cor_botao_finalizar_pedido = ?, cor_titulo_cabecalho = ?, cor_descricao_cabecalho = ?, cor_fundo_cardapio = ?, endereco_estabelecimento = ?, horario_abertura = ?, horario_fechamento = ?
                 WHERE id = ? AND usuario_id = ?
             ");
             $stmt->execute([
@@ -232,25 +409,63 @@ try {
                 $descricao,
                 $cor_principal,
                 $novaImagemFundo,
+                $cor_preco,
+                $cor_botao_adicionar,
+                $cor_botao_ver_carrinho,
+                $cor_botao_finalizar_pedido,
+                $cor_titulo_cabecalho,
+                $cor_descricao_cabecalho,
+                $cor_fundo_cardapio,
+                $endereco_estabelecimento,
+                $horario_abertura,
+                $horario_fechamento,
                 $cardapio_id,
                 $usuario_id
             ]);
         } else {
             $stmt = $db->prepare("
                 UPDATE cardapios
-                SET nome_negocio = ?, descricao = ?, cor_principal = ?
+                SET nome_negocio = ?, descricao = ?, cor_principal = ?, cor_preco = ?, cor_botao_adicionar = ?, cor_botao_ver_carrinho = ?, cor_botao_finalizar_pedido = ?, cor_titulo_cabecalho = ?, cor_descricao_cabecalho = ?, cor_fundo_cardapio = ?, endereco_estabelecimento = ?, horario_abertura = ?, horario_fechamento = ?
                 WHERE id = ? AND usuario_id = ?
             ");
             $stmt->execute([
                 $nome_negocio,
                 $descricao,
                 $cor_principal,
+                $cor_preco,
+                $cor_botao_adicionar,
+                $cor_botao_ver_carrinho,
+                $cor_botao_finalizar_pedido,
+                $cor_titulo_cabecalho,
+                $cor_descricao_cabecalho,
+                $cor_fundo_cardapio,
+                $endereco_estabelecimento,
+                $horario_abertura,
+                $horario_fechamento,
                 $cardapio_id,
                 $usuario_id
             ]);
         }
 
         if ($item_nome !== '' && $item_preco !== '') {
+            if ($item_categoria === '') {
+                flash('erro', 'Selecione uma categoria para o novo item.');
+                redirecionarPainel();
+            }
+
+            $stmt = $db->prepare("
+                SELECT id
+                FROM categorias
+                WHERE cardapio_id = ? AND nome = ?
+                LIMIT 1
+            ");
+            $stmt->execute([$cardapio_id, $item_categoria]);
+
+            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                flash('erro', 'A categoria selecionada não é válida.');
+                redirecionarPainel();
+            }
+
             $imagemItem = salvarUpload($_FILES['item_imagem'] ?? [], 'item_cardapio_novo');
             $precoNumerico = (float) str_replace(',', '.', $item_preco);
 

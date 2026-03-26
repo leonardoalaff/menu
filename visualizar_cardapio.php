@@ -17,6 +17,30 @@ if (!$cardapio) {
     die("Cardápio não encontrado.");
 }
 
+date_default_timezone_set('America/Sao_Paulo');
+
+$horarioAbertura = trim((string) ($cardapio['horario_abertura'] ?? ''));
+$horarioFechamento = trim((string) ($cardapio['horario_fechamento'] ?? ''));
+$agoraMinutos = (int) date('H') * 60 + (int) date('i');
+$statusFuncionamento = null;
+
+if ($horarioAbertura !== '' && $horarioFechamento !== '') {
+    [$aberturaHora, $aberturaMinuto] = array_pad(array_map('intval', explode(':', $horarioAbertura)), 2, 0);
+    [$fechamentoHora, $fechamentoMinuto] = array_pad(array_map('intval', explode(':', $horarioFechamento)), 2, 0);
+
+    $aberturaTotal = ($aberturaHora * 60) + $aberturaMinuto;
+    $fechamentoTotal = ($fechamentoHora * 60) + $fechamentoMinuto;
+
+    if ($aberturaTotal === $fechamentoTotal) {
+        $statusFuncionamento = 'aberto';
+    } elseif ($aberturaTotal < $fechamentoTotal) {
+        $statusFuncionamento = ($agoraMinutos >= $aberturaTotal && $agoraMinutos < $fechamentoTotal) ? 'aberto' : 'fechado';
+    } else {
+        $statusFuncionamento = ($agoraMinutos >= $aberturaTotal || $agoraMinutos < $fechamentoTotal) ? 'aberto' : 'fechado';
+    }
+}
+
+
 $stmt = $db->prepare("SELECT * FROM itens WHERE cardapio_id = ? ORDER BY nome ASC");
 $stmt->execute([$cardapio['id']]);
 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -29,15 +53,26 @@ $totalItens = count($itens);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visualização do Cardápio</title>
-  <link rel="stylesheet" href="style_ver_cardapio4.css">
+  <link rel="stylesheet" href="style_ver_cardapio5.css">
 </head>
-<body class="mobile-body">
+<body class="mobile-body" style="background: <?= htmlspecialchars($cardapio['cor_fundo_cardapio'] ?? '#f3f4f6') ?>;">
 
   <div class="bg-shape shape-1"></div>
   <div class="bg-shape shape-2"></div>
   <div class="bg-shape shape-3"></div>
 
-  <div class="mobile-app">
+  <div
+    class="mobile-app"
+    style="
+      --cor-preco: <?= htmlspecialchars($cardapio['cor_preco'] ?? '#f97316') ?>;
+      --cor-botao-adicionar: <?= htmlspecialchars($cardapio['cor_botao_adicionar'] ?? '#ef4444') ?>;
+      --cor-botao-ver-carrinho: <?= htmlspecialchars($cardapio['cor_botao_ver_carrinho'] ?? '#ef4444') ?>;
+      --cor-botao-finalizar-pedido: <?= htmlspecialchars($cardapio['cor_botao_finalizar_pedido'] ?? '#ef4444') ?>;
+      --cor-titulo-cabecalho: <?= htmlspecialchars($cardapio['cor_titulo_cabecalho'] ?? '#2f2f2f') ?>;
+      --cor-descricao-cabecalho: <?= htmlspecialchars($cardapio['cor_descricao_cabecalho'] ?? '#4b5563') ?>;
+      --cor-fundo-cardapio: <?= htmlspecialchars($cardapio['cor_fundo_cardapio'] ?? '#f3f4f6') ?>;
+    "
+  >
 
     <div class="topbar fade-up delay-1">
       <div>
@@ -59,14 +94,35 @@ $totalItens = count($itens);
     >
       <div class="cliente-cardapio-overlay">
         <span class="cliente-badge">Cardápio Online</span>
-        <h1><?= htmlspecialchars($cardapio['nome_negocio'] ?? '') ?></h1>
-        <p><?= nl2br(htmlspecialchars($cardapio['descricao'] ?? '')) ?></p>
+        <h1 style="color: <?= htmlspecialchars($cardapio['cor_titulo_cabecalho'] ?? '#2f2f2f') ?>;"><?= htmlspecialchars($cardapio['nome_negocio'] ?? '') ?></h1>
+        <p style="color: <?= htmlspecialchars($cardapio['cor_descricao_cabecalho'] ?? '#4b5563') ?>;"><?= nl2br(htmlspecialchars($cardapio['descricao'] ?? '')) ?></p>
 
         <div class="hero-mini-list">
           <span><?= $totalItens ?> item(ns)</span>
+          <?php if ($statusFuncionamento !== null): ?>
+            <span class="status-loja <?= $statusFuncionamento === 'aberto' ? 'aberto' : 'fechado' ?>"><?= $statusFuncionamento === 'aberto' ? 'Aberto' : 'Fechado' ?></span>
+          <?php endif; ?>
           <span>Entrega</span>
           <span>Retirada</span>
         </div>
+
+        <?php if (!empty($cardapio['endereco_estabelecimento']) || ($horarioAbertura !== '' && $horarioFechamento !== '')): ?>
+          <div class="hero-store-info">
+            <?php if (!empty($cardapio['endereco_estabelecimento'])): ?>
+              <div class="store-info-item">
+                <span class="store-info-icon">📍</span>
+                <span><?= htmlspecialchars($cardapio['endereco_estabelecimento']) ?></span>
+              </div>
+            <?php endif; ?>
+
+            <?php if ($horarioAbertura !== '' && $horarioFechamento !== ''): ?>
+              <div class="store-info-item">
+                <span class="store-info-icon">🕒</span>
+                <span>Funcionamento: <?= htmlspecialchars($horarioAbertura) ?> às <?= htmlspecialchars($horarioFechamento) ?></span>
+              </div>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -119,7 +175,7 @@ $totalItens = count($itens);
                     <button type="button" class="qtd-btn aumentar">+</button>
                   </div>
 
-                  <button type="button" class="btn-add-carrinho">
+                  <button type="button" class="btn-add-carrinho" style="background: <?= htmlspecialchars($cardapio['cor_botao_adicionar'] ?? '#ef4444') ?>;">
                     Adicionar
                   </button>
                 </div>
@@ -148,7 +204,7 @@ $totalItens = count($itens);
       R$ <span id="carrinhoTotal">0,00</span>
     </div>
 
-    <button type="button" class="btn-carrinho-finalizar" id="abrirCarrinho">
+    <button type="button" class="btn-carrinho-finalizar" id="abrirCarrinho" style="background: <?= htmlspecialchars($cardapio['cor_botao_ver_carrinho'] ?? '#ef4444') ?>;">
       Ver carrinho
     </button>
   </div>
@@ -189,7 +245,7 @@ $totalItens = count($itens);
           <strong>R$ <span id="modalCarrinhoTotal">0,00</span></strong>
         </div>
 
-        <button type="button" class="btn-finalizar-pedido" id="finalizarPedido">
+        <button type="button" class="btn-finalizar-pedido" id="finalizarPedido" style="background: <?= htmlspecialchars($cardapio['cor_botao_finalizar_pedido'] ?? '#ef4444') ?>;">
           Finalizar pedido
         </button>
       </div>

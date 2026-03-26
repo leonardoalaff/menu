@@ -23,6 +23,35 @@ try {
     if (!colunaExiste($db, 'itens', 'imagem')) {
         $db->exec("ALTER TABLE itens ADD COLUMN imagem TEXT");
     }
+
+    $novasColunasCardapio = [
+        'cor_preco' => "ALTER TABLE cardapios ADD COLUMN cor_preco TEXT DEFAULT '#f97316'",
+        'cor_botao_adicionar' => "ALTER TABLE cardapios ADD COLUMN cor_botao_adicionar TEXT DEFAULT '#ef4444'",
+        'cor_botao_ver_carrinho' => "ALTER TABLE cardapios ADD COLUMN cor_botao_ver_carrinho TEXT DEFAULT '#ef4444'",
+        'cor_botao_finalizar_pedido' => "ALTER TABLE cardapios ADD COLUMN cor_botao_finalizar_pedido TEXT DEFAULT '#ef4444'",
+        'cor_titulo_cabecalho' => "ALTER TABLE cardapios ADD COLUMN cor_titulo_cabecalho TEXT DEFAULT '#2f2f2f'",
+        'cor_descricao_cabecalho' => "ALTER TABLE cardapios ADD COLUMN cor_descricao_cabecalho TEXT DEFAULT '#4b5563'",
+        'cor_fundo_cardapio' => "ALTER TABLE cardapios ADD COLUMN cor_fundo_cardapio TEXT DEFAULT '#f3f4f6'",
+        'endereco_estabelecimento' => "ALTER TABLE cardapios ADD COLUMN endereco_estabelecimento TEXT",
+        'horario_abertura' => "ALTER TABLE cardapios ADD COLUMN horario_abertura TEXT DEFAULT '18:00'",
+        'horario_fechamento' => "ALTER TABLE cardapios ADD COLUMN horario_fechamento TEXT DEFAULT '23:00'"
+    ];
+
+    foreach ($novasColunasCardapio as $coluna => $sqlAlter) {
+        if (!colunaExiste($db, 'cardapios', $coluna)) {
+            $db->exec($sqlAlter);
+        }
+    }
+
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS categorias (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cardapio_id INTEGER NOT NULL,
+            nome TEXT NOT NULL,
+            UNIQUE(cardapio_id, nome),
+            FOREIGN KEY (cardapio_id) REFERENCES cardapios(id)
+        )
+    ");
 } catch (PDOException $e) {
     die("Erro ao conectar com o banco: " . $e->getMessage());
 }

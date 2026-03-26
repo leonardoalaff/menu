@@ -22,9 +22,19 @@ if (!$cardapio) {
     $cardapio = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+$stmt = $db->prepare("SELECT id, nome FROM categorias WHERE cardapio_id = ? ORDER BY nome ASC");
+$stmt->execute([$cardapio['id']]);
+$categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 $stmt = $db->prepare("SELECT * FROM itens WHERE cardapio_id = ? ORDER BY categoria ASC, nome ASC");
 $stmt->execute([$cardapio['id']]);
 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$flashSucesso = $_SESSION['flash_sucesso'] ?? null;
+unset($_SESSION['flash_sucesso']);
+
+$flashErro = $_SESSION['flash_erro'] ?? null;
+unset($_SESSION['flash_erro']);
 
 $totalItens = count($itens);
 $totalComImagem = 0;
@@ -43,7 +53,7 @@ foreach ($itens as $item) {
   <title>Painel - CardápioOn</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
-  <link rel="stylesheet" href="style_painel3.css">
+  <link rel="stylesheet" href="style_painel4.css">
 </head>
 <body class="mobile-body">
 
@@ -84,6 +94,20 @@ foreach ($itens as $item) {
         <span><i class="ri-global-line"></i> Online</span>
       </div>
     </section>
+
+    <?php if ($flashSucesso): ?>
+      <div class="alert-box alert-success fade-up delay-2">
+        <i class="ri-checkbox-circle-line"></i>
+        <span><?= htmlspecialchars($flashSucesso) ?></span>
+      </div>
+    <?php endif; ?>
+
+    <?php if ($flashErro): ?>
+      <div class="alert-box alert-error fade-up delay-2">
+        <i class="ri-error-warning-line"></i>
+        <span><?= htmlspecialchars($flashErro) ?></span>
+      </div>
+    <?php endif; ?>
 
     <section class="dashboard-grid fade-up delay-2">
       <div class="dashboard-left">
@@ -159,6 +183,20 @@ foreach ($itens as $item) {
 
           <p><?= htmlspecialchars($cardapio['descricao']) ?></p>
 
+          <?php if (!empty($cardapio['endereco_estabelecimento'])): ?>
+            <div class="preview-meta-line">
+              <i class="ri-map-pin-2-line"></i>
+              <span><?= htmlspecialchars($cardapio['endereco_estabelecimento']) ?></span>
+            </div>
+          <?php endif; ?>
+
+          <?php if (!empty($cardapio['horario_abertura']) && !empty($cardapio['horario_fechamento'])): ?>
+            <div class="preview-meta-line">
+              <i class="ri-time-line"></i>
+              <span><?= htmlspecialchars($cardapio['horario_abertura']) ?> às <?= htmlspecialchars($cardapio['horario_fechamento']) ?></span>
+            </div>
+          <?php endif; ?>
+
           <div class="preview-footer">
             <div class="preview-color">
               <span class="color-chip large" style="background: <?= htmlspecialchars($cardapio['cor_principal']) ?>;"></span>
@@ -171,8 +209,8 @@ foreach ($itens as $item) {
       </div>
 
       <div class="dashboard-right">
-        <form id="form-editar" class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST" enctype="multipart/form-data">
-          <div class="section-header">
+        <form id="form-editar" class="form-card fade-up delay-3 form-card-edit" action="salvar_cardapio.php" method="POST" enctype="multipart/form-data">
+          <div class="section-header edit-header">
             <div>
               <small class="section-mini-title">Personalização</small>
               <h3>Editar cardápio</h3>
@@ -180,72 +218,369 @@ foreach ($itens as $item) {
             <span class="section-badge">Principal</span>
           </div>
 
-          <p class="form-subtitle">Atualize os dados do seu negócio e adicione novos itens ao cardápio.</p>
+          <div class="edit-toggle-wrap">
+            <p class="edit-toggle-text">As opções de edição ficam ocultas para deixar o painel mais limpo.</p>
+            <button type="button" class="btn-secondary edit-toggle-btn" data-target="editar-cardapio-conteudo" aria-expanded="false">
+              <i class="ri-eye-line"></i>
+              <span>Mostrar opções de edição</span>
+              <i class="ri-arrow-down-s-line toggle-arrow"></i>
+            </button>
+          </div>
 
-          <input type="hidden" name="acao" value="salvar_cardapio">
-          <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
+          <div id="editar-cardapio-conteudo" class="edit-form-content" hidden>
+            <p class="form-subtitle">Organize a identidade visual do seu cardápio em blocos mais claros: informações do negócio, cores da interface e imagem do cabeçalho.</p>
 
-          <div class="form-grid-2">
-            <div class="field-group full">
-              <label class="label-inline">Nome do negócio</label>
-              <input
-                type="text"
-                name="nome_negocio"
-                placeholder="Nome do negócio"
-                value="<?= htmlspecialchars($cardapio['nome_negocio']) ?>"
-                required
-              >
-            </div>
+            <input type="hidden" name="acao" value="salvar_cardapio">
+            <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
 
-            <div class="field-group full">
-              <label class="label-inline">Descrição</label>
-              <textarea
-                name="descricao"
-                placeholder="Descrição do negócio"
-              ><?= htmlspecialchars($cardapio['descricao']) ?></textarea>
-            </div>
-
-            <div class="field-group full">
-              <label class="label-inline">Cor principal do cardápio</label>
-              <div class="color-row">
-                <input type="color" name="cor_principal" value="<?= htmlspecialchars($cardapio['cor_principal']) ?>">
-                <div class="color-info">
-                  <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_principal']) ?>;"></span>
-                  <small>Escolha a cor que representa sua marca</small>
+            <div class="edit-overview-grid">
+              
+            <div class="edit-sections-grid">
+            <section class="edit-block edit-block-brand">
+              <div class="edit-block-head">
+                <span class="edit-block-icon"><i class="ri-edit-box-line"></i></span>
+                <div>
+                  <h4>Informações principais</h4>
+                  <p>Os dados que aparecem na parte superior do cardápio.</p>
                 </div>
               </div>
-            </div>
 
-            <div class="field-group full">
-              <label class="label-inline">Imagem de fundo do cardápio</label>
-
-              <?php if (!empty($cardapio['imagem_fundo'])): ?>
-                <div class="upload-preview banner-preview">
-                  <img src="<?= htmlspecialchars($cardapio['imagem_fundo']) ?>" alt="Imagem de fundo do cardápio">
+              <div class="form-grid-2 brand-grid">
+                <div class="field-group full field-surface">
+                  <label class="label-inline">Nome do negócio</label>
+                  <input
+                    type="text"
+                    name="nome_negocio"
+                    placeholder="Nome do negócio"
+                    value="<?= htmlspecialchars($cardapio['nome_negocio']) ?>"
+                    required
+                  >
                 </div>
 
-                <div class="media-actions">
-                  <span class="media-help">Você pode trocar ou remover a imagem atual.</span>
-                  <div>
-                    <button type="submit" formaction="salvar_cardapio.php" formmethod="POST" name="acao" value="remover_fundo" class="btn-secondary btn-danger-lite" onclick="return confirm('Remover a imagem de fundo atual?');">
-                      Remover imagem de fundo
-                    </button>
+                <div class="field-group full field-surface">
+                  <label class="label-inline">Descrição</label>
+                  <textarea
+                    name="descricao"
+                    placeholder="Descrição do negócio"
+                  ><?= htmlspecialchars($cardapio['descricao']) ?></textarea>
+                </div>
+
+                <div class="field-group full field-surface">
+                  <label class="label-inline">Endereço do estabelecimento</label>
+                  <input
+                    type="text"
+                    name="endereco_estabelecimento"
+                    placeholder="Rua, número, bairro, cidade..."
+                    value="<?= htmlspecialchars($cardapio['endereco_estabelecimento'] ?? '') ?>"
+                  >
+                </div>
+
+                <div class="field-group full field-surface horario-field-surface">
+                  <label class="label-inline">Horário de funcionamento</label>
+                  <div class="horario-grid">
+                    <div>
+                      <label class="label-inline small-label">Abertura</label>
+                      <input
+                        type="time"
+                        name="horario_abertura"
+                        value="<?= htmlspecialchars($cardapio['horario_abertura'] ?? '18:00') ?>"
+                      >
+                    </div>
+                    <div>
+                      <label class="label-inline small-label">Fechamento</label>
+                      <input
+                        type="time"
+                        name="horario_fechamento"
+                        value="<?= htmlspecialchars($cardapio['horario_fechamento'] ?? '23:00') ?>"
+                      >
+                    </div>
+                  </div>
+                  <small class="field-tip">O cardápio mostrará automaticamente “Aberto” ou “Fechado” conforme esse horário.</small>
+                </div>
+
+                <div class="field-group full field-surface">
+                  <label class="label-inline">Cor principal do cardápio</label>
+                  <div class="color-row color-row-highlight">
+                    <input type="color" name="cor_principal" value="<?= htmlspecialchars($cardapio['cor_principal'] ?? '#1677ff') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_principal'] ?? '#1677ff') ?>;"></span>
+                      <small>Escolha a cor que representa sua marca.</small>
+                    </div>
                   </div>
                 </div>
-              <?php endif; ?>
+              </div>
+            </section>
 
-              <input type="file" name="imagem_fundo" accept="image/*">
+            <section class="edit-block edit-block-colors">
+              <div class="edit-block-head">
+                <span class="edit-block-icon"><i class="ri-brush-ai-line"></i></span>
+                <div>
+                  <h4>Cores da interface</h4>
+                  <p>Personalize cada área importante do cardápio separadamente.</p>
+                </div>
+              </div>
+
+              <div class="color-settings-grid">
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-money-dollar-circle-line"></i></span>
+                    <div>
+                      <label class="label-inline">Cor dos preços</label>
+                      <p>Altera a cor do valor dos produtos.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_preco" value="<?= htmlspecialchars($cardapio['cor_preco'] ?? '#f97316') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_preco'] ?? '#f97316') ?>;"></span>
+                      <small>Preço dos itens</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-add-circle-line"></i></span>
+                    <div>
+                      <label class="label-inline">Botão adicionar</label>
+                      <p>Cor do botão de adicionar ao carrinho.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_botao_adicionar" value="<?= htmlspecialchars($cardapio['cor_botao_adicionar'] ?? '#ef4444') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_botao_adicionar'] ?? '#ef4444') ?>;"></span>
+                      <small>CTA adicionar</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-shopping-bag-3-line"></i></span>
+                    <div>
+                      <label class="label-inline">Botão ver carrinho</label>
+                      <p>Cor do botão flutuante do carrinho.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_botao_ver_carrinho" value="<?= htmlspecialchars($cardapio['cor_botao_ver_carrinho'] ?? '#ef4444') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_botao_ver_carrinho'] ?? '#ef4444') ?>;"></span>
+                      <small>Barra do carrinho</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-check-double-line"></i></span>
+                    <div>
+                      <label class="label-inline">Botão finalizar pedido</label>
+                      <p>Cor do botão final dentro do carrinho.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_botao_finalizar_pedido" value="<?= htmlspecialchars($cardapio['cor_botao_finalizar_pedido'] ?? '#ef4444') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_botao_finalizar_pedido'] ?? '#ef4444') ?>;"></span>
+                      <small>Finalização</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-text"></i></span>
+                    <div>
+                      <label class="label-inline">Título do cabeçalho</label>
+                      <p>Cor do nome do negócio no cabeçalho.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_titulo_cabecalho" value="<?= htmlspecialchars($cardapio['cor_titulo_cabecalho'] ?? '#2f2f2f') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_titulo_cabecalho'] ?? '#2f2f2f') ?>;"></span>
+                      <small>Nome da loja</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-align-left"></i></span>
+                    <div>
+                      <label class="label-inline">Descrição do cabeçalho</label>
+                      <p>Cor do texto logo abaixo do título.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_descricao_cabecalho" value="<?= htmlspecialchars($cardapio['cor_descricao_cabecalho'] ?? '#4b5563') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_descricao_cabecalho'] ?? '#4b5563') ?>;"></span>
+                      <small>Texto auxiliar</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group color-setting-card">
+                  <div class="color-card-top">
+                    <span class="color-card-icon"><i class="ri-layout-4-line"></i></span>
+                    <div>
+                      <label class="label-inline">Background do cardápio</label>
+                      <p>Cor de fundo da página do cardápio.</p>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <input type="color" name="cor_fundo_cardapio" value="<?= htmlspecialchars($cardapio['cor_fundo_cardapio'] ?? '#f3f4f6') ?>">
+                    <div class="color-info">
+                      <span class="color-chip" style="background: <?= htmlspecialchars($cardapio['cor_fundo_cardapio'] ?? '#f3f4f6') ?>;"></span>
+                      <small>Fundo da página</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="edit-block edit-block-media">
+              <div class="edit-block-head">
+                <span class="edit-block-icon"><i class="ri-landscape-line"></i></span>
+                <div>
+                  <h4>Imagem de fundo do cardápio</h4>
+                  <p>Use uma capa para deixar o cabeçalho mais atrativo.</p>
+                </div>
+              </div>
+
+              <div class="field-group full field-surface upload-surface">
+                <?php if (!empty($cardapio['imagem_fundo'])): ?>
+                  <div class="upload-preview banner-preview">
+                    <img src="<?= htmlspecialchars($cardapio['imagem_fundo']) ?>" alt="Imagem de fundo do cardápio">
+                  </div>
+
+                  <div class="media-actions">
+                    <span class="media-help">Você pode trocar ou remover a imagem atual.</span>
+                    <div>
+                      <button type="submit" formaction="salvar_cardapio.php" formmethod="POST" name="acao" value="remover_fundo" class="btn-secondary btn-danger-lite" onclick="return confirm('Remover a imagem de fundo atual?');">
+                        Remover imagem de fundo
+                      </button>
+                    </div>
+                  </div>
+                <?php else: ?>
+                  <div class="empty-upload-state">
+                    <span class="empty-upload-icon"><i class="ri-image-add-line"></i></span>
+                    <div>
+                      <strong>Nenhuma imagem de fundo cadastrada</strong>
+                      <small>Envie uma imagem para enriquecer o topo do seu cardápio.</small>
+                    </div>
+                  </div>
+                <?php endif; ?>
+
+                <label class="label-inline">Enviar imagem</label>
+                <input type="file" name="imagem_fundo" accept="image/*">
+              </div>
+            </section>
+            </div>
+
+            <button type="submit" class="btn-primary">Salvar dados do cardápio</button>
+          </div>
+        </form>
+
+        <section class="form-card fade-up delay-3 category-card">
+          <div class="section-header inner">
+            <div>
+              <small class="section-mini-title">Organização</small>
+              <h3>Criar e gerenciar categorias</h3>
             </div>
           </div>
 
-          <hr>
+          <div class="category-manager">
+            <div class="field-group full">
+              <label class="label-inline">Nova categoria</label>
+              <form action="salvar_cardapio.php" method="POST" class="category-form">
+                <input type="hidden" name="acao" value="criar_categoria">
+                <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
+                <input type="text" name="categoria_nome" placeholder="Ex: Hambúrgueres" required>
+                <button type="submit" class="btn-secondary">Criar categoria</button>
+              </form>
+            </div>
 
-          <div id="novo-item" class="section-header inner">
+            <div class="field-group full">
+              <label class="label-inline">Categorias cadastradas</label>
+              <?php if (!empty($categorias)): ?>
+                <div class="category-list">
+                  <?php foreach ($categorias as $categoria): ?>
+                    <div class="category-item">
+                      <div class="category-item-top">
+                        <span class="ifood-tag"><?= htmlspecialchars($categoria['nome']) ?></span>
+                        <?php
+                          $categoriaEmUso = false;
+                          foreach ($itens as $itemCategoriaUso) {
+                              if (($itemCategoriaUso['categoria'] ?? '') === $categoria['nome']) {
+                                  $categoriaEmUso = true;
+                                  break;
+                              }
+                          }
+                        ?>
+                        <?php if ($categoriaEmUso): ?>
+                          <span class="category-status in-use">Em uso</span>
+                        <?php else: ?>
+                          <span class="category-status available">Livre</span>
+                        <?php endif; ?>
+                      </div>
+
+                      <div class="category-item-actions">
+                        <form action="salvar_cardapio.php" method="POST" class="category-inline-form">
+                          <input type="hidden" name="acao" value="editar_categoria">
+                          <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
+                          <input type="hidden" name="categoria_id" value="<?= (int) $categoria['id'] ?>">
+                          <input type="text" name="categoria_nome" value="<?= htmlspecialchars($categoria['nome']) ?>" required>
+                          <button type="submit" class="btn-secondary">Salvar</button>
+                        </form>
+
+                        <form action="salvar_cardapio.php" method="POST" class="category-delete-form" onsubmit="return confirm('Excluir esta categoria?');">
+                          <input type="hidden" name="acao" value="excluir_categoria">
+                          <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
+                          <input type="hidden" name="categoria_id" value="<?= (int) $categoria['id'] ?>">
+                          <?php if ($categoriaEmUso): ?>
+                            <button type="submit" class="btn-secondary btn-danger-lite" disabled title="Essa categoria está em uso">Excluir</button>
+                          <?php else: ?>
+                            <button type="submit" class="btn-secondary btn-danger-lite">Excluir</button>
+                          <?php endif; ?>
+                        </form>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+                <p class="field-helper">Categorias em uso não podem ser excluídas até que os itens sejam movidos para outra categoria.</p>
+              <?php else: ?>
+                <p class="field-helper">Você ainda não criou nenhuma categoria.</p>
+              <?php endif; ?>
+            </div>
+          </div>
+        </section>
+
+        <form id="novo-item" class="form-card fade-up delay-3" action="salvar_cardapio.php" method="POST" enctype="multipart/form-data">
+          <div class="section-header inner">
             <div>
               <small class="section-mini-title">Novo produto</small>
               <h3>Adicionar item</h3>
             </div>
           </div>
+
+          <p class="form-subtitle">Escolha uma categoria criada no painel e adicione um novo produto ao seu cardápio.</p>
+
+          <input type="hidden" name="acao" value="salvar_cardapio">
+          <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
+          <input type="hidden" name="nome_negocio" value="<?= htmlspecialchars($cardapio['nome_negocio']) ?>">
+          <input type="hidden" name="descricao" value="<?= htmlspecialchars($cardapio['descricao']) ?>">
+          <input type="hidden" name="cor_principal" value="<?= htmlspecialchars($cardapio['cor_principal'] ?? '#1677ff') ?>">
+          <input type="hidden" name="cor_preco" value="<?= htmlspecialchars($cardapio['cor_preco'] ?? '#f97316') ?>">
+          <input type="hidden" name="cor_botao_adicionar" value="<?= htmlspecialchars($cardapio['cor_botao_adicionar'] ?? '#ef4444') ?>">
+          <input type="hidden" name="cor_botao_ver_carrinho" value="<?= htmlspecialchars($cardapio['cor_botao_ver_carrinho'] ?? '#ef4444') ?>">
+          <input type="hidden" name="cor_botao_finalizar_pedido" value="<?= htmlspecialchars($cardapio['cor_botao_finalizar_pedido'] ?? '#ef4444') ?>">
+          <input type="hidden" name="cor_titulo_cabecalho" value="<?= htmlspecialchars($cardapio['cor_titulo_cabecalho'] ?? '#2f2f2f') ?>">
+          <input type="hidden" name="cor_descricao_cabecalho" value="<?= htmlspecialchars($cardapio['cor_descricao_cabecalho'] ?? '#4b5563') ?>">
+          <input type="hidden" name="cor_fundo_cardapio" value="<?= htmlspecialchars($cardapio['cor_fundo_cardapio'] ?? '#f3f4f6') ?>">
 
           <div class="form-grid-2">
             <div class="field-group">
@@ -255,7 +590,15 @@ foreach ($itens as $item) {
 
             <div class="field-group">
               <label class="label-inline">Categoria</label>
-              <input type="text" name="item_categoria" placeholder="Ex: Hambúrgueres">
+              <select name="item_categoria" <?= empty($categorias) ? 'disabled' : '' ?>>
+                <option value=""><?= empty($categorias) ? 'Crie uma categoria primeiro' : 'Selecione uma categoria' ?></option>
+                <?php foreach ($categorias as $categoria): ?>
+                  <option value="<?= htmlspecialchars($categoria['nome']) ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
+                <?php endforeach; ?>
+              </select>
+              <?php if (empty($categorias)): ?>
+                <p class="field-helper">Cadastre pelo menos uma categoria para adicionar novos itens.</p>
+              <?php endif; ?>
             </div>
 
             <div class="field-group full">
@@ -274,7 +617,7 @@ foreach ($itens as $item) {
             </div>
           </div>
 
-          <button type="submit" class="btn-primary">Salvar alterações</button>
+          <button type="submit" class="btn-primary">Adicionar item</button>
         </form>
       </div>
     </section>
@@ -377,6 +720,32 @@ foreach ($itens as $item) {
           }
         });
       });
+
+      document.querySelectorAll('.edit-toggle-btn').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+          const alvoId = this.getAttribute('data-target');
+          const conteudo = document.getElementById(alvoId);
+          if (!conteudo) return;
+
+          const expandido = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', expandido ? 'false' : 'true');
+          conteudo.hidden = expandido;
+          this.classList.toggle('is-open', !expandido);
+
+          const texto = this.querySelector('span');
+          if (texto) {
+            texto.textContent = expandido ? 'Mostrar opções de edição' : 'Ocultar opções de edição';
+          }
+        });
+      });
+
+      if (window.location.hash === '#form-editar') {
+        const botaoEditar = document.querySelector('.edit-toggle-btn[data-target="editar-cardapio-conteudo"]');
+        const conteudoEditar = document.getElementById('editar-cardapio-conteudo');
+        if (botaoEditar && conteudoEditar && conteudoEditar.hidden) {
+          botaoEditar.click();
+        }
+      }
     });
   </script>
 </body>
