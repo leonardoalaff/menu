@@ -175,12 +175,6 @@ foreach ($itens as $item) {
               <strong>Relatórios IA</strong>
               <small>Vendas, lucro e insights</small>
             </a>
-
-            <a href="#layout-inteligente" class="quick-action-box quick-action-ai quick-action-layout" id="atalho-layout-inteligente">
-              <span class="quick-icon"><i class="ri-magic-line"></i></span>
-              <strong>Layout inteligente</strong>
-              <small>Paleta + imagem com IA</small>
-            </a>
           </div>
         </section>
 
@@ -221,48 +215,6 @@ foreach ($itens as $item) {
       </div>
 
       <div class="dashboard-right">
-        <form id="layout-inteligente" class="form-card fade-up delay-3 intelligent-layout-card" action="salvar_cardapio.php" method="POST">
-          <div class="section-header inner">
-            <div>
-              <small class="section-mini-title">IA visual</small>
-              <h3>Layout inteligente</h3>
-            </div>
-            <span class="section-badge section-badge-ai">Novo</span>
-          </div>
-
-          <p class="form-subtitle">Descreva o estilo do seu restaurante ou lanchonete. A IA vai criar a paleta de cores do cardápio e também gerar automaticamente uma nova imagem de fundo para o cabeçalho.</p>
-
-          <input type="hidden" name="acao" value="layout_inteligente">
-          <input type="hidden" name="cardapio_id" value="<?= $cardapio['id'] ?>">
-
-          <div class="smart-layout-box">
-            <div class="smart-layout-copy">
-              <span class="smart-layout-icon"><i class="ri-sparkling-2-line"></i></span>
-              <div>
-                <strong>Exemplo de descrição</strong>
-                <p>Hamburgueria urbana moderna, com clima noturno, neon discreto, estilo premium e jovem.</p>
-              </div>
-            </div>
-
-            <div class="field-group full">
-              <label class="label-inline">Como é o seu negócio?</label>
-              <textarea name="descricao_layout_inteligente" id="descricao_layout_inteligente" placeholder="Ex: Pizzaria artesanal com ambiente aconchegante, tons terrosos, clima familiar e visual sofisticado." required></textarea>
-              <p class="field-helper">A IA usará essa descrição para escolher as cores e criar a imagem de fundo do cardápio.</p>
-            </div>
-
-            <div class="smart-layout-features">
-              <span><i class="ri-palette-line"></i> Paleta automática</span>
-              <span><i class="ri-image-2-line"></i> Imagem de fundo gerada por IA</span>
-              <span><i class="ri-layout-4-line"></i> Aplicação direta no cardápio</span>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-primary" id="btn-layout-inteligente">
-            <i class="ri-magic-line"></i>
-            <span>Gerar layout inteligente</span>
-          </button>
-        </form>
-
         <form id="form-editar" class="form-card fade-up delay-3 form-card-edit" action="salvar_cardapio.php" method="POST" enctype="multipart/form-data">
           <div class="section-header edit-header">
             <div>
@@ -833,44 +785,6 @@ foreach ($itens as $item) {
       if (checkboxImagemIA) {
         checkboxImagemIA.addEventListener('change', atualizarEstadoImagemIA);
         atualizarEstadoImagemIA();
-      }
-
-      const atalhoLayout = document.getElementById('atalho-layout-inteligente');
-      const secaoLayout = document.getElementById('layout-inteligente');
-      const campoDescricaoLayout = document.getElementById('descricao_layout_inteligente');
-      const botaoLayout = document.getElementById('btn-layout-inteligente');
-
-      if (atalhoLayout && secaoLayout) {
-        atalhoLayout.addEventListener('click', function (event) {
-          event.preventDefault();
-          secaoLayout.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          secaoLayout.classList.remove('layout-highlight');
-          window.setTimeout(function () {
-            secaoLayout.classList.add('layout-highlight');
-          }, 50);
-          if (campoDescricaoLayout) {
-            window.setTimeout(function () {
-              campoDescricaoLayout.focus();
-            }, 350);
-          }
-        });
-      }
-
-      if (secaoLayout) {
-        secaoLayout.addEventListener('animationend', function () {
-          secaoLayout.classList.remove('layout-highlight');
-        });
-      }
-
-      if (secaoLayout && botaoLayout) {
-        secaoLayout.addEventListener('submit', function () {
-          botaoLayout.disabled = true;
-          botaoLayout.classList.add('is-loading');
-          const texto = botaoLayout.querySelector('span');
-          if (texto) {
-            texto.textContent = 'Gerando paleta e imagem...';
-          }
-        });
       }
 
       if (window.location.hash === '#form-editar') {

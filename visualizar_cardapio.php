@@ -46,6 +46,24 @@ $stmt->execute([$cardapio['id']]);
 $itens = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalItens = count($itens);
+
+$cardapioIdAtual = (int) ($cardapio['id'] ?? 0);
+$dadosChatbot = [
+    'id' => $cardapioIdAtual,
+    'nome_negocio' => (string) ($cardapio['nome_negocio'] ?? 'Restaurante'),
+    'descricao' => (string) ($cardapio['descricao'] ?? ''),
+    'endereco_estabelecimento' => (string) ($cardapio['endereco_estabelecimento'] ?? ''),
+    'horario_abertura' => $horarioAbertura,
+    'horario_fechamento' => $horarioFechamento,
+    'status_funcionamento' => (string) ($statusFuncionamento ?? ''),
+    'itens' => array_map(function ($item) {
+        return [
+            'nome' => (string) ($item['nome'] ?? ''),
+            'descricao' => (string) ($item['descricao'] ?? ''),
+            'preco' => (float) ($item['preco'] ?? 0)
+        ];
+    }, $itens)
+];
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -209,6 +227,37 @@ $totalItens = count($itens);
     </button>
   </div>
 
+
+  <button type="button" class="chatbot-fab" id="abrirChatbot" aria-label="Abrir assistente do cardápio">
+    <span class="chatbot-fab-icon">💬</span>
+    <span class="chatbot-fab-texto">Ajuda</span>
+  </button>
+
+  <div class="chatbot-overlay" id="chatbotOverlay">
+    <div class="chatbot-janela">
+      <div class="chatbot-topo">
+        <div>
+          <small>Assistente virtual</small>
+          <h3>Tire dúvidas sobre o cardápio</h3>
+        </div>
+        <button type="button" class="chatbot-fechar" id="fecharChatbot" aria-label="Fechar chatbot">✕</button>
+      </div>
+
+      <div class="chatbot-mensagens" id="chatbotMensagens">
+        <div class="chatbot-msg bot">
+          <div class="chatbot-bolha">
+            Olá! Posso ajudar com itens, preços, horários de funcionamento e sugestões do cardápio.
+          </div>
+        </div>
+      </div>
+
+      <form class="chatbot-form" id="chatbotForm">
+        <input type="text" id="chatbotInput" placeholder="Ex.: O que você recomenda hoje?" maxlength="300" autocomplete="off">
+        <button type="submit" id="chatbotEnviar">Enviar</button>
+      </form>
+    </div>
+  </div>
+
   <div class="modal-carrinho-overlay" id="modalCarrinho">
     <div class="modal-carrinho">
       <div class="modal-carrinho-topo">
@@ -268,12 +317,146 @@ $totalItens = count($itens);
       const nomeClienteEl = document.getElementById('nomeCliente');
       const enderecoClienteEl = document.getElementById('enderecoCliente');
 
+      const chatbotConfig = <?= json_encode($dadosChatbot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+      const chatbotOverlay = document.getElementById('chatbotOverlay');
+      const abrirChatbotBtn = document.getElementById('abrirChatbot');
+      const fecharChatbotBtn = document.getElementById('fecharChatbot');
+      const chatbotMensagensEl = document.getElementById('chatbotMensagens');
+      const chatbotForm = document.getElementById('chatbotForm');
+      const chatbotInput = document.getElementById('chatbotInput');
+      const chatbotEnviar = document.getElementById('chatbotEnviar');
+
       function formatarMoeda(valor) {
         return Number(valor).toLocaleString('pt-BR', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         });
       }
+
+      function escaparHtml(texto) {
+        return String(texto || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function adicionarMensagemChatbot(tipo, texto) {
+        if (!chatbotMensagensEl) return;
+
+        const bloco = document.createElement('div');
+        bloco.className = 'chatbot-msg ' + tipo;
+        bloco.innerHTML = '<div class="chatbot-bolha">' + escaparHtml(texto).replace(/\n/g, '<br>') + '</div>';
+        chatbotMensagensEl.appendChild(bloco);
+        chatbotMensagensEl.scrollTop = chatbotMensagensEl.scrollHeight;
+      }
+
+      function abrirChatbot() {
+        if (!chatbotOverlay) return;
+        chatbotOverlay.classList.add('ativo');
+        chatbotOverlay.style.display = 'flex';
+        setTimeout(() => {
+          if (chatbotInput) chatbotInput.focus();
+        }, 120);
+      }
+
+      function fecharChatbot() {
+        if (!chatbotOverlay) return;
+        chatbotOverlay.classList.remove('ativo');
+        setTimeout(() => {
+          if (!chatbotOverlay.classList.contains('ativo')) {
+            chatbotOverlay.style.display = 'none';
+          }
+        }, 200);
+      }
+
+      async function enviarMensagemChatbot(mensagem) {
+        adicionarMensagemChatbot('user', mensagem);
+        adicionarMensagemChatbot('bot', 'Digitando...');
+
+        const placeholders = chatbotMensagensEl ? chatbotMensagensEl.querySelectorAll('.chatbot-msg.bot .chatbot-bolha') : [];
+        const placeholder = placeholders.length ? placeholders[placeholders.length - 1] : null;
+
+        try {
+          const resposta = await fetch('chat_cliente.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              mensagem: mensagem,
+              cardapio_id: chatbotConfig.id
+            })
+          });
+
+          const dados = await resposta.json();
+
+          if (!resposta.ok || !dados.ok) {
+            throw new Error(dados.erro || 'Não foi possível obter uma resposta agora.');
+          }
+
+          if (placeholder) {
+            placeholder.innerHTML = escaparHtml(dados.resposta || 'Desculpe, não consegui responder agora.').replace(/\n/g, '<br>');
+          } else {
+            adicionarMensagemChatbot('bot', dados.resposta || 'Desculpe, não consegui responder agora.');
+          }
+
+          if (dados.acao === 'adicionar_ao_carrinho' && Array.isArray(dados.acoes_carrinho) && dados.acoes_carrinho.length > 0) {
+            adicionarItensViaChatbot(dados.acoes_carrinho);
+          }
+        } catch (erro) {
+          if (placeholder) {
+            placeholder.innerHTML = escaparHtml(erro.message || 'Erro ao chamar o assistente.');
+          } else {
+            adicionarMensagemChatbot('bot', erro.message || 'Erro ao chamar o assistente.');
+          }
+        }
+
+        if (chatbotMensagensEl) {
+          chatbotMensagensEl.scrollTop = chatbotMensagensEl.scrollHeight;
+        }
+      }
+
+      function adicionarItensViaChatbot(acoes) {
+        if (!Array.isArray(acoes) || acoes.length === 0) {
+          return;
+        }
+
+        const itensAdicionados = [];
+
+        acoes.forEach(function (acao) {
+          const itemId = String(acao.item_id || '').trim();
+          const quantidade = Math.max(1, parseInt(acao.quantidade, 10) || 1);
+
+          if (itemId === '') {
+            return;
+          }
+
+          const card = document.querySelector('.produto-card[data-id="' + itemId + '"]');
+          if (!card) {
+            return;
+          }
+
+          const qtdEl = card.querySelector('.quantidade');
+          if (!qtdEl) {
+            return;
+          }
+
+          const qtdAtual = parseInt(qtdEl.dataset.qtd, 10) || 0;
+          alterarQuantidadeVisual(card, qtdAtual + quantidade);
+
+          const nomeItem = (acao.nome || card.dataset.nome || 'Item').trim();
+          itensAdicionados.push(quantidade + 'x ' + nomeItem);
+        });
+
+        atualizarCarrinho();
+
+        if (itensAdicionados.length > 0) {
+          adicionarMensagemChatbot('bot', 'Adicionei ao carrinho: ' + itensAdicionados.join(', ') + '.');
+        }
+      }
+
 
       function abrirModalCarrinho() {
         if (!modalCarrinho) return;
@@ -457,8 +640,43 @@ $totalItens = count($itens);
         });
       }
 
+
+      if (chatbotOverlay) {
+        chatbotOverlay.style.display = 'none';
+        chatbotOverlay.addEventListener('click', function (e) {
+          if (e.target === chatbotOverlay) {
+            fecharChatbot();
+          }
+        });
+      }
+
+      if (abrirChatbotBtn) {
+        abrirChatbotBtn.addEventListener('click', abrirChatbot);
+      }
+
+      if (fecharChatbotBtn) {
+        fecharChatbotBtn.addEventListener('click', fecharChatbot);
+      }
+
+      if (chatbotForm) {
+        chatbotForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const mensagem = chatbotInput ? chatbotInput.value.trim() : '';
+          if (mensagem === '') return;
+
+          if (chatbotInput) chatbotInput.value = '';
+          if (chatbotEnviar) chatbotEnviar.disabled = true;
+
+          await enviarMensagemChatbot(mensagem);
+
+          if (chatbotEnviar) chatbotEnviar.disabled = false;
+          if (chatbotInput) chatbotInput.focus();
+        });
+      }
+
       if (finalizarPedidoBtn) {
-        finalizarPedidoBtn.addEventListener('click', function () {
+        finalizarPedidoBtn.addEventListener('click', async function () {
           const itens = Object.values(carrinho);
 
           if (itens.length === 0) {
@@ -496,7 +714,46 @@ $totalItens = count($itens);
 
           mensagem += '%0ATotal: R$ ' + formatarMoeda(total);
 
-          alert(decodeURIComponent(mensagem));
+          const textoOriginalBotao = finalizarPedidoBtn.textContent;
+          finalizarPedidoBtn.disabled = true;
+          finalizarPedidoBtn.textContent = 'Registrando...';
+
+          try {
+            const respostaVenda = await fetch('registrar_venda.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                cardapio_id: chatbotConfig.id,
+                cliente_nome: nomeCliente,
+                cliente_endereco: enderecoCliente,
+                origem: 'cardapio_web',
+                itens: itens
+              })
+            });
+
+            const dadosVenda = await respostaVenda.json();
+
+            if (!respostaVenda.ok || !dadosVenda.ok) {
+              throw new Error(dadosVenda.erro || 'Não foi possível registrar a venda.');
+            }
+
+            alert('Pedido registrado com sucesso!\n\n' + decodeURIComponent(mensagem));
+
+            document.querySelectorAll('.produto-card').forEach(card => {
+              alterarQuantidadeVisual(card, 0);
+            });
+            atualizarCarrinho();
+            if (nomeClienteEl) nomeClienteEl.value = '';
+            if (enderecoClienteEl) enderecoClienteEl.value = '';
+            fecharModalCarrinho();
+          } catch (erro) {
+            alert(erro.message || 'Erro ao registrar a venda.');
+          } finally {
+            finalizarPedidoBtn.disabled = false;
+            finalizarPedidoBtn.textContent = textoOriginalBotao;
+          }
         });
       }
 

@@ -1,0 +1,9 @@
+ANTES DE ENVIAR PARA O GITHUB
+
+1. Revogue no painel da OpenAI todas as chaves antigas que ficaram expostas.
+2. Gere uma nova chave.
+3. No arquivo config_openai.php, troque apenas "chaveapileonardo" pela nova chave OU configure a variavel de ambiente OPENAI_API_KEY no servidor.
+4. Nao clique em Bypass no aviso do GitHub.
+5. Os arquivos dentro de uploads/ foram ignorados no Git para evitar que imagens geradas travem commits futuros.
+
+Se o seu repositorio local ja contem o historico com a chave antiga, voce ainda precisa limpar esse historico antes de conseguir dar push no mesmo repositorio.

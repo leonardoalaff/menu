@@ -24,6 +24,10 @@ try {
         $db->exec("ALTER TABLE itens ADD COLUMN imagem TEXT");
     }
 
+    if (!colunaExiste($db, 'itens', 'custo')) {
+        $db->exec("ALTER TABLE itens ADD COLUMN custo REAL DEFAULT 0");
+    }
+
     $novasColunasCardapio = [
         'cor_preco' => "ALTER TABLE cardapios ADD COLUMN cor_preco TEXT DEFAULT '#f97316'",
         'cor_botao_adicionar' => "ALTER TABLE cardapios ADD COLUMN cor_botao_adicionar TEXT DEFAULT '#ef4444'",
@@ -50,6 +54,38 @@ try {
             nome TEXT NOT NULL,
             UNIQUE(cardapio_id, nome),
             FOREIGN KEY (cardapio_id) REFERENCES cardapios(id)
+        )
+    ");
+
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS vendas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cardapio_id INTEGER NOT NULL,
+            usuario_id INTEGER NOT NULL,
+            cliente_nome TEXT NOT NULL,
+            cliente_endereco TEXT,
+            total REAL NOT NULL DEFAULT 0,
+            lucro_estimado REAL NOT NULL DEFAULT 0,
+            origem TEXT DEFAULT 'cardapio',
+            observacoes TEXT,
+            criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (cardapio_id) REFERENCES cardapios(id),
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        )
+    ");
+
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS venda_itens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            venda_id INTEGER NOT NULL,
+            item_id INTEGER,
+            nome_item TEXT NOT NULL,
+            preco_unitario REAL NOT NULL DEFAULT 0,
+            custo_unitario REAL NOT NULL DEFAULT 0,
+            quantidade INTEGER NOT NULL DEFAULT 1,
+            subtotal REAL NOT NULL DEFAULT 0,
+            lucro_item REAL NOT NULL DEFAULT 0,
+            FOREIGN KEY (venda_id) REFERENCES vendas(id)
         )
     ");
 } catch (PDOException $e) {

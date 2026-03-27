@@ -1,0 +1,22 @@
+# Chaves e segredos
+config_openai.php
+.env
+.env.*
+*.key
+*.pem
+
+# Arquivos temporários e backups
+*.bak
+*.bak2
+*.tmp
+*.log
+
+# Arquivos gerados localmente
+uploads/*
+!uploads/.gitkeep
+*.zip
+
+# Git e sistema
+.git/
+.DS_Store
+Thumbs.db

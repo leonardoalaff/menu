@@ -153,120 +153,7 @@ function montarPromptImagemProduto(string $nomeNegocio, string $nomeItem, string
     return implode(' ', $partes);
 }
 
-function chamarOpenAIChatJson(string $developerPrompt, string $userPrompt): array
-{
-    require_once __DIR__ . '/config_openai.php';
-
-    if (!defined('OPENAI_API_KEY') || OPENAI_API_KEY === '' || OPENAI_API_KEY === 'chaveapileonardo') {
-        return ['ok' => false, 'erro' => 'Configure sua chave da OpenAI em config_openai.php para usar o layout inteligente.'];
-    }
-
-    if (!function_exists('curl_init')) {
-        return ['ok' => false, 'erro' => 'O cURL não está habilitado no servidor.'];
-    }
-
-    $payload = [
-        'model' => defined('OPENAI_MODEL') ? OPENAI_MODEL : 'gpt-4.1-mini',
-        'messages' => [
-            ['role' => 'developer', 'content' => $developerPrompt],
-            ['role' => 'user', 'content' => $userPrompt],
-        ],
-        'temperature' => 0.8,
-        'response_format' => [
-            'type' => 'json_schema',
-            'json_schema' => [
-                'name' => 'layout_inteligente',
-                'strict' => true,
-                'schema' => [
-                    'type' => 'object',
-                    'additionalProperties' => false,
-                    'properties' => [
-                        'tema' => ['type' => 'string'],
-                        'cor_principal' => ['type' => 'string'],
-                        'cor_preco' => ['type' => 'string'],
-                        'cor_botao_adicionar' => ['type' => 'string'],
-                        'cor_botao_ver_carrinho' => ['type' => 'string'],
-                        'cor_botao_finalizar_pedido' => ['type' => 'string'],
-                        'cor_titulo_cabecalho' => ['type' => 'string'],
-                        'cor_descricao_cabecalho' => ['type' => 'string'],
-                        'cor_fundo_cardapio' => ['type' => 'string'],
-                        'prompt_imagem_fundo' => ['type' => 'string'],
-                    ],
-                    'required' => [
-                        'tema',
-                        'cor_principal',
-                        'cor_preco',
-                        'cor_botao_adicionar',
-                        'cor_botao_ver_carrinho',
-                        'cor_botao_finalizar_pedido',
-                        'cor_titulo_cabecalho',
-                        'cor_descricao_cabecalho',
-                        'cor_fundo_cardapio',
-                        'prompt_imagem_fundo'
-                    ]
-                ]
-            ]
-        ]
-    ];
-
-    $ch = curl_init('https://api.openai.com/v1/chat/completions');
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . OPENAI_API_KEY,
-        ],
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-        CURLOPT_TIMEOUT => 180,
-    ]);
-
-    $resposta = curl_exec($ch);
-    $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $erroCurl = curl_error($ch);
-    curl_close($ch);
-
-    if ($resposta === false || $erroCurl) {
-        return ['ok' => false, 'erro' => 'Falha ao conectar com a OpenAI: ' . $erroCurl];
-    }
-
-    $json = json_decode($resposta, true);
-
-    if ($httpCode >= 400) {
-        $mensagem = $json['error']['message'] ?? ('Erro HTTP ' . $httpCode . ' ao gerar layout inteligente.');
-        return ['ok' => false, 'erro' => $mensagem];
-    }
-
-    $conteudo = $json['choices'][0]['message']['content'] ?? '';
-    if (is_array($conteudo)) {
-        $partesTexto = [];
-        foreach ($conteudo as $parte) {
-            if (($parte['type'] ?? '') === 'text' && isset($parte['text'])) {
-                $partesTexto[] = $parte['text'];
-            }
-        }
-        $conteudo = implode("\n", $partesTexto);
-    }
-
-    $dados = json_decode((string) $conteudo, true);
-    if (!is_array($dados)) {
-        return ['ok' => false, 'erro' => 'A IA retornou um formato inválido para o layout inteligente.'];
-    }
-
-    return ['ok' => true, 'dados' => $dados];
-}
-
-function normalizarHex(string $valor, string $fallback): string
-{
-    $valor = strtoupper(trim($valor));
-    if (preg_match('/^#[0-9A-F]{6}$/', $valor)) {
-        return $valor;
-    }
-
-    return strtoupper($fallback);
-}
-
-function gerarImagemComIA(string $prompt, string $prefixo = 'img_ia', string $size = '1024x1024'): array
+function gerarImagemProdutoComIA(string $prompt): array
 {
     require_once __DIR__ . '/config_openai.php';
 
@@ -281,7 +168,7 @@ function gerarImagemComIA(string $prompt, string $prefixo = 'img_ia', string $si
     $payload = [
         'model' => defined('OPENAI_IMAGE_MODEL') ? OPENAI_IMAGE_MODEL : 'gpt-image-1',
         'prompt' => $prompt,
-        'size' => $size,
+        'size' => '1024x1024',
     ];
 
     $ch = curl_init('https://api.openai.com/v1/images/generations');
@@ -317,52 +204,12 @@ function gerarImagemComIA(string $prompt, string $prefixo = 'img_ia', string $si
         return ['ok' => false, 'erro' => 'A API não retornou uma imagem em formato esperado.'];
     }
 
-    $caminho = salvarBase64ComoImagem($imagemBase64, $prefixo);
+    $caminho = salvarBase64ComoImagem($imagemBase64, 'item_ia');
     if (!$caminho) {
         return ['ok' => false, 'erro' => 'A imagem foi gerada, mas não foi possível salvá-la no servidor.'];
     }
 
     return ['ok' => true, 'caminho' => $caminho];
-}
-
-function gerarImagemProdutoComIA(string $prompt): array
-{
-    return gerarImagemComIA($prompt, 'item_ia', '1024x1024');
-}
-
-function gerarLayoutInteligente(string $nomeNegocio, string $descricaoLayout): array
-{
-    $developerPrompt = 'Você é um diretor de arte especialista em branding para restaurantes, delivery e cardápios digitais. Crie paletas visualmente coerentes, bonitas, modernas e legíveis. Sempre responda apenas com JSON válido no schema pedido. Todas as cores precisam estar em hexadecimal de 6 dígitos. O prompt da imagem deve descrever uma capa premium para o topo de um cardápio digital, sem textos, sem logotipos, sem letras e sem marcas d\'água.';
-
-    $userPrompt = 'Negócio: ' . $nomeNegocio . "\n"
-        . 'Descrição do restaurante/lanchonete: ' . $descricaoLayout . "\n"
-        . 'Crie uma identidade visual completa. A imagem de fundo deve combinar com o conceito descrito e funcionar bem como banner de cabeçalho de cardápio online.';
-
-    $resultado = chamarOpenAIChatJson($developerPrompt, $userPrompt);
-    if (!$resultado['ok']) {
-        return $resultado;
-    }
-
-    $dados = $resultado['dados'] ?? [];
-
-    $layout = [
-        'tema' => trim((string) ($dados['tema'] ?? 'Layout personalizado')),
-        'cor_principal' => normalizarHex((string) ($dados['cor_principal'] ?? ''), '#1677FF'),
-        'cor_preco' => normalizarHex((string) ($dados['cor_preco'] ?? ''), '#F97316'),
-        'cor_botao_adicionar' => normalizarHex((string) ($dados['cor_botao_adicionar'] ?? ''), '#EF4444'),
-        'cor_botao_ver_carrinho' => normalizarHex((string) ($dados['cor_botao_ver_carrinho'] ?? ''), '#EF4444'),
-        'cor_botao_finalizar_pedido' => normalizarHex((string) ($dados['cor_botao_finalizar_pedido'] ?? ''), '#EF4444'),
-        'cor_titulo_cabecalho' => normalizarHex((string) ($dados['cor_titulo_cabecalho'] ?? ''), '#2F2F2F'),
-        'cor_descricao_cabecalho' => normalizarHex((string) ($dados['cor_descricao_cabecalho'] ?? ''), '#4B5563'),
-        'cor_fundo_cardapio' => normalizarHex((string) ($dados['cor_fundo_cardapio'] ?? ''), '#F3F4F6'),
-        'prompt_imagem_fundo' => trim((string) ($dados['prompt_imagem_fundo'] ?? '')),
-    ];
-
-    if ($layout['prompt_imagem_fundo'] === '') {
-        $layout['prompt_imagem_fundo'] = 'Capa premium gastronômica para cardápio digital de ' . $nomeNegocio . ', inspirada em: ' . $descricaoLayout . '. Sem textos, sem logotipos, sem letras, iluminação cinematográfica, composição elegante e convidativa.';
-    }
-
-    return ['ok' => true, 'dados' => $layout];
 }
 
 function cardapioPertenceAoUsuario(PDO $db, int $cardapio_id, int $usuario_id): bool
@@ -450,86 +297,6 @@ try {
         redirecionarPainel();
     }
 
-
-    if ($acao === 'layout_inteligente') {
-        $cardapio_id = (int) ($_POST['cardapio_id'] ?? 0);
-        $descricao_layout = trim($_POST['descricao_layout_inteligente'] ?? '');
-
-        if ($cardapio_id <= 0) {
-            flash('erro', 'Cardápio inválido para aplicar o layout inteligente.');
-            redirecionarPainel();
-        }
-
-        if (!cardapioPertenceAoUsuario($db, $cardapio_id, $usuario_id)) {
-            flash('erro', 'Cardápio não encontrado.');
-            redirecionarPainel();
-        }
-
-        if ($descricao_layout === '') {
-            flash('erro', 'Descreva o estilo do seu restaurante para gerar o layout inteligente.');
-            redirecionarPainel();
-        }
-
-        $stmt = $db->prepare("
-            SELECT id, nome_negocio, imagem_fundo
-            FROM cardapios
-            WHERE id = ? AND usuario_id = ?
-            LIMIT 1
-        ");
-        $stmt->execute([$cardapio_id, $usuario_id]);
-        $cardapioAtual = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$cardapioAtual) {
-            flash('erro', 'Cardápio não encontrado.');
-            redirecionarPainel();
-        }
-
-        $resultadoLayout = gerarLayoutInteligente((string) ($cardapioAtual['nome_negocio'] ?? 'Meu Negócio'), $descricao_layout);
-        if (!$resultadoLayout['ok']) {
-            flash('erro', 'Não foi possível gerar o layout inteligente: ' . ($resultadoLayout['erro'] ?? 'erro desconhecido'));
-            redirecionarPainel();
-        }
-
-        $layout = $resultadoLayout['dados'] ?? [];
-
-        $resultadoImagem = gerarImagemComIA((string) ($layout['prompt_imagem_fundo'] ?? ''), 'fundo_ia', '1024x1024');
-        if (!$resultadoImagem['ok']) {
-            flash('erro', 'A paleta foi gerada, mas a imagem de fundo não pôde ser criada: ' . ($resultadoImagem['erro'] ?? 'erro desconhecido'));
-            redirecionarPainel();
-        }
-
-        $novoFundo = $resultadoImagem['caminho'] ?? null;
-        if (!$novoFundo) {
-            flash('erro', 'A imagem foi criada, mas não foi possível salvá-la no servidor.');
-            redirecionarPainel();
-        }
-
-        removerArquivoLocal($cardapioAtual['imagem_fundo'] ?? null);
-
-        $stmt = $db->prepare("
-            UPDATE cardapios
-            SET cor_principal = ?, cor_preco = ?, cor_botao_adicionar = ?, cor_botao_ver_carrinho = ?,
-                cor_botao_finalizar_pedido = ?, cor_titulo_cabecalho = ?, cor_descricao_cabecalho = ?,
-                cor_fundo_cardapio = ?, imagem_fundo = ?
-            WHERE id = ? AND usuario_id = ?
-        ");
-        $stmt->execute([
-            $layout['cor_principal'],
-            $layout['cor_preco'],
-            $layout['cor_botao_adicionar'],
-            $layout['cor_botao_ver_carrinho'],
-            $layout['cor_botao_finalizar_pedido'],
-            $layout['cor_titulo_cabecalho'],
-            $layout['cor_descricao_cabecalho'],
-            $layout['cor_fundo_cardapio'],
-            $novoFundo,
-            $cardapio_id,
-            $usuario_id
-        ]);
-
-        flash('sucesso', 'Layout inteligente aplicado com sucesso. A paleta e a imagem de fundo foram geradas por IA.');
-        redirecionarPainel();
-    }
 
     if ($acao === 'editar_categoria') {
         $cardapio_id = (int) ($_POST['cardapio_id'] ?? 0);
